@@ -28,7 +28,11 @@ export class PreviewPanel {
       { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true },
       {
         enableScripts: true,
-        localResourceRoots: [extensionUri],
+        localResourceRoots: [
+          extensionUri,
+          // Allow loading images from anywhere on the filesystem
+          vscode.Uri.file('/'),
+        ],
       }
     );
 
@@ -71,8 +75,13 @@ export class PreviewPanel {
 
     this.panel.webview.onDidReceiveMessage(
       async message => {
-        if (message.command === 'copy') {
-          await vscode.env.clipboard.writeText(message.html as string);
+        if (message.command === 'copyRich') {
+          // Convert local images to base64, then send back for rich-text execCommand copy
+          const resolved = await resolveImagesAsBase64(message.html as string);
+          this.panel.webview.postMessage({ command: 'doRichCopy', html: resolved });
+        } else if (message.command === 'copy') {
+          const resolved = await resolveImagesAsBase64(message.html as string);
+          await vscode.env.clipboard.writeText(resolved);
           this.panel.webview.postMessage({ command: 'copyDone' });
         } else if (message.command === 'openTheme') {
           this.openOrCreateCustomTheme();
@@ -94,8 +103,25 @@ export class PreviewPanel {
     // Re-read custom theme on each refresh so edits apply immediately
     this.renderer.reloadTheme(this.getCustomThemePath());
     const markdown = editor.document.getText();
-    const rendered = this.renderer.render(markdown);
+    const docDir = path.dirname(editor.document.uri.fsPath);
+    const rendered = this.resolveLocalImages(this.renderer.render(markdown), docDir);
     this.panel.webview.html = this.buildHtml(rendered, null);
+  }
+
+  // Replace local file paths in img src with webview URIs so the webview can load them.
+  // Handles: relative paths (../foo.png), absolute paths (/Users/...)
+  // Leaves http/https/data URIs untouched.
+  private resolveLocalImages(html: string, docDir: string): string {
+    return html.replace(/(<img[^>]+src=")([^"]+)(")/g, (_match, pre, src, post) => {
+      if (/^https?:\/\/|^data:/i.test(src)) { return pre + src + post; }
+      // Decode HTML entities from escapeHtml (&amp; → & etc.) before resolving
+      const decoded = src.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+      const absolute = path.isAbsolute(decoded)
+        ? decoded
+        : path.resolve(docDir, decoded);
+      const uri = this.panel.webview.asWebviewUri(vscode.Uri.file(absolute));
+      return pre + uri.toString() + post;
+    });
   }
 
   private getCustomThemePath(): string | null {
@@ -143,7 +169,7 @@ export class PreviewPanel {
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="Content-Security-Policy"
-    content="default-src 'none'; style-src 'unsafe-inline'; script-src 'nonce-${nonce}';">
+    content="default-src 'none'; style-src 'unsafe-inline'; script-src 'nonce-${nonce}'; img-src * data:;">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #fff; font-family: sans-serif; }
@@ -189,29 +215,12 @@ export class PreviewPanel {
   <script nonce="${nonce}">
     const vscodeApi = window.acquireVsCodeApi();
 
-    // Rich-text copy: clone rendered DOM into a contenteditable div,
-    // select it, execCommand('copy') — browser puts it on clipboard as text/html.
-    // Pasting into WeChat editor preserves all inline styles.
+    // Rich-text copy: send HTML to host for image base64 conversion,
+    // then do execCommand('copy') on the resolved HTML when it comes back.
     document.getElementById('copyRichBtn').addEventListener('click', function() {
-      var preview = document.getElementById('preview');
-      var stage = document.getElementById('rich-copy-stage');
-      stage.innerHTML = preview.innerHTML;
-
-      var range = document.createRange();
-      range.selectNodeContents(stage);
-      var sel = window.getSelection();
-      sel.removeAllRanges();
-      sel.addRange(range);
-
-      var ok = document.execCommand('copy');
-      sel.removeAllRanges();
-      stage.innerHTML = '';
-
-      if (ok) {
-        showTip('✅ 已复制，直接去公众号编辑器粘贴！');
-      } else {
-        showTip('❌ 复制失败，请尝试「复制 HTML」');
-      }
+      var html = document.getElementById('preview').innerHTML;
+      showTip('⏳ 处理中...');
+      vscodeApi.postMessage({ command: 'copyRich', html: html });
     });
 
     // Plain HTML string copy (fallback)
@@ -229,7 +238,21 @@ export class PreviewPanel {
     });
 
     window.addEventListener('message', function(event) {
-      if (event.data && event.data.command === 'copyDone') {
+      var msg = event.data;
+      if (!msg) { return; }
+      if (msg.command === 'doRichCopy') {
+        var stage = document.getElementById('rich-copy-stage');
+        stage.innerHTML = msg.html;
+        var range = document.createRange();
+        range.selectNodeContents(stage);
+        var sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+        var ok = document.execCommand('copy');
+        sel.removeAllRanges();
+        stage.innerHTML = '';
+        showTip(ok ? '✅ 已复制，直接去公众号编辑器粘贴！' : '❌ 复制失败，请尝试「复制 HTML」');
+      } else if (msg.command === 'copyDone') {
         showTip('✅ HTML 已复制！');
       }
     });
@@ -259,6 +282,49 @@ function getNonce(): string {
     text += possible.charAt(Math.floor(Math.random() * possible.length));
   }
   return text;
+}
+
+// Replace vscode-webview-resource: and local file URIs in img src with base64 data URIs.
+// This is necessary because WeChat editor cannot load vscode-internal or file:// URLs.
+async function resolveImagesAsBase64(html: string): Promise<string> {
+  const pattern = /(<img[^>]+src=")([^"]+)(")/g;
+  const matches: { full: string; pre: string; src: string; post: string }[] = [];
+  let m: RegExpExecArray | null;
+  while ((m = pattern.exec(html)) !== null) {
+    matches.push({ full: m[0], pre: m[1], src: m[2], post: m[3] });
+  }
+
+  for (const match of matches) {
+    const src = match.src;
+    // Skip already-base64
+    if (/^data:/i.test(src)) { continue; }
+
+    try {
+      let filePath: string;
+      // Actual format: https://file+.vscode-resource.vscode-cdn.net/abs/path/to/file
+      if (/vscode-resource\.vscode-cdn\.net/i.test(src)) {
+        const pathPart = src.replace(/^https?:\/\/[^/]+/, '');
+        filePath = decodeURIComponent(pathPart);
+      } else if (src.startsWith('vscode-webview-resource:')) {
+        const withoutScheme = src.replace(/^vscode-webview-resource:\/\/[^/]*/, '');
+        filePath = decodeURIComponent(withoutScheme);
+      } else if (src.startsWith('file://')) {
+        filePath = decodeURIComponent(src.replace(/^file:\/\//, ''));
+      } else {
+        // Plain remote URL — leave as-is
+        continue;
+      }
+
+      const data = fs.readFileSync(filePath);
+      const ext = path.extname(filePath).toLowerCase().replace('.', '');
+      const mime = ext === 'jpg' ? 'jpeg' : ext === 'svg' ? 'svg+xml' : ext;
+      const dataUri = `data:image/${mime};base64,${data.toString('base64')}`;
+      html = html.replace(match.full, match.pre + dataUri + match.post);
+    } catch {
+      // If we can't read the file, leave it as-is
+    }
+  }
+  return html;
 }
 
 // Default template written to .wechat/theme.css on first open

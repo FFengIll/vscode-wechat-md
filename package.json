@@ -18,7 +18,11 @@
       {
         "command": "wechat-md.preview",
         "title": "WeChat: Preview Markdown",
-        "category": "WeChat MD"
+        "category": "WeChat MD",
+        "icon": {
+          "light": "images/icon-light.svg",
+          "dark": "images/icon-dark.svg"
+        }
       },
       {
         "command": "wechat-md.copyHtml",
@@ -27,6 +31,13 @@
       }
     ],
     "menus": {
+      "editor/title": [
+        {
+          "command": "wechat-md.preview",
+          "when": "editorLangId == markdown",
+          "group": "navigation"
+        }
+      ],
       "editor/context": [
         {
           "command": "wechat-md.preview",
