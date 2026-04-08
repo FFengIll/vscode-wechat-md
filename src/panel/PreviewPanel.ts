@@ -394,5 +394,37 @@ const DEFAULT_THEME_CSS = `/*
 
   /* 内容最大宽度 */
   --wechat-max-width: 680px;
+
+  /* ── 标题样式（各级可独立覆盖）─────────────────────── */
+
+  /* H1 */
+  --wechat-h1-font-size: 24px;
+  --wechat-h1-font-weight: bold;
+  --wechat-h1-color: #1a1a1a;
+
+  /* H2 */
+  --wechat-h2-font-size: 20px;
+  --wechat-h2-font-weight: bold;
+  --wechat-h2-color: #1a1a1a;
+
+  /* H3 */
+  --wechat-h3-font-size: 18px;
+  --wechat-h3-font-weight: bold;
+  --wechat-h3-color: #1a1a1a;
+
+  /* H4 */
+  --wechat-h4-font-size: 16px;
+  --wechat-h4-font-weight: bold;
+  --wechat-h4-color: #333;
+
+  /* H5 */
+  --wechat-h5-font-size: 15px;
+  --wechat-h5-font-weight: bold;
+  --wechat-h5-color: #555;
+
+  /* H6 */
+  --wechat-h6-font-size: 14px;
+  --wechat-h6-font-weight: bold;
+  --wechat-h6-color: #666;
 }
 `;
