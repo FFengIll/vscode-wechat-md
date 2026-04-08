@@ -5,6 +5,9 @@ import { WeChatRenderer } from './renderer';
 export function activate(context: vscode.ExtensionContext) {
   const renderer = new WeChatRenderer();
 
+  // Initialize shiki highlighter asynchronously — preview will use it once ready
+  renderer.initHighlighter().catch(() => { /* highlighter unavailable, fallback to plain pre/code */ });
+
   // Command 1: Open the WeChat Markdown preview panel
   context.subscriptions.push(
     vscode.commands.registerCommand('wechat-md.preview', () => {
@@ -20,7 +23,7 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.window.showWarningMessage('请先打开一个 Markdown 文件。');
         return;
       }
-      const html = renderer.render(editor.document.getText());
+      const html = renderer.render(editor.document.getText(), 'copy');
       await vscode.env.clipboard.writeText(html);
       vscode.window.showInformationMessage('已复制微信公众号 HTML！请前往编辑器粘贴。');
     })

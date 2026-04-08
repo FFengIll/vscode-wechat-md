@@ -44,6 +44,9 @@ export class PreviewPanel {
     this.panel = panel;
     this.renderer = new WeChatRenderer();
 
+    // Initialize shiki highlighter — refresh again once ready so preview gets syntax highlighting
+    this.renderer.initHighlighter().then(() => this.refresh()).catch(() => { /* use plain fallback */ });
+
     // Capture the current markdown editor before the panel takes focus
     const current = vscode.window.activeTextEditor;
     if (current && current.document.languageId === 'markdown') {
@@ -76,11 +79,14 @@ export class PreviewPanel {
     this.panel.webview.onDidReceiveMessage(
       async message => {
         if (message.command === 'copyRich') {
-          // Convert local images to base64, then send back for rich-text execCommand copy
-          const resolved = await resolveImagesAsBase64(message.html as string);
+          const markdown = this.lastMarkdownEditor?.document.getText() ?? '';
+          const copyHtml = this.renderer.render(markdown, 'copy');
+          const resolved = await resolveImagesAsBase64(copyHtml);
           this.panel.webview.postMessage({ command: 'doRichCopy', html: resolved });
         } else if (message.command === 'copy') {
-          const resolved = await resolveImagesAsBase64(message.html as string);
+          const markdown = this.lastMarkdownEditor?.document.getText() ?? '';
+          const copyHtml = this.renderer.render(markdown, 'copy');
+          const resolved = await resolveImagesAsBase64(copyHtml);
           await vscode.env.clipboard.writeText(resolved);
           this.panel.webview.postMessage({ command: 'copyDone' });
         } else if (message.command === 'openTheme') {

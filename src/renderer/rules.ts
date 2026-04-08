@@ -1,9 +1,13 @@
 import MarkdownIt from 'markdown-it';
 import { Theme } from './theme';
 
+export type RenderMode = 'preview' | 'copy';
+
 // Apply WeChat-compatible inline styles to all markdown-it renderer rules.
 // WeChat strips <style> blocks, so every style must be on the element itself.
-export function applyWeChatRules(md: MarkdownIt, theme: Theme): void {
+// In 'preview' mode, fence/code_block are handled by @shikijs/markdown-it plugin — not here.
+// In 'copy' mode, we output the WeChat editor-compatible DOM structure.
+export function applyWeChatRules(md: MarkdownIt, theme: Theme, mode: RenderMode = 'preview'): void {
   const r = md.renderer.rules;
 
   r['heading_open'] = (tokens, idx) => {
@@ -23,26 +27,33 @@ export function applyWeChatRules(md: MarkdownIt, theme: Theme): void {
   r['code_inline'] = (tokens, idx) =>
     `<code style="${theme.inlineCode}">${escapeHtml(tokens[idx].content)}</code>`;
 
-  r['code_block'] = (tokens, idx) => {
-    const lines = tokens[idx].content.replace(/\n$/, '').split('\n');
-    const codeLines = lines.map(line =>
-      line === ''
-        ? `<code><span leaf=""><br class="ProseMirror-trailingBreak"></span></code>`
-        : `<code><span leaf="">${escapeHtml(line)}</span></code>`
-    ).join('');
-    return `<section class="code-snippet__js"><pre class="code-snippet__js code-snippet code-snippet_nowrap" data-lang="">${codeLines}</pre></section>\n`;
-  };
+  if (mode === 'copy') {
+    r['code_block'] = (tokens, idx) => {
+      const lines = tokens[idx].content.replace(/\n$/, '').split('\n');
+      const codeLines = lines.map(line =>
+        line === ''
+          ? `<code><span leaf=""><br class="ProseMirror-trailingBreak"></span></code>`
+          : `<code><span leaf="">${escapeHtml(line)}</span></code>`
+      ).join('');
+      return `<section class="code-snippet__js"><pre class="code-snippet__js code-snippet code-snippet_nowrap" data-lang="">${codeLines}</pre></section>\n`;
+    };
 
-  r['fence'] = (tokens, idx) => {
-    const lang = tokens[idx].info.trim() || '';
-    const lines = tokens[idx].content.replace(/\n$/, '').split('\n');
-    const codeLines = lines.map(line =>
-      line === ''
-        ? `<code><span leaf=""><br class="ProseMirror-trailingBreak"></span></code>`
-        : `<code><span leaf="">${escapeHtml(line)}</span></code>`
-    ).join('');
-    return `<section class="code-snippet__js"><pre class="code-snippet__js code-snippet code-snippet_nowrap" data-lang="${escapeHtml(lang)}">${codeLines}</pre></section>\n`;
-  };
+    r['fence'] = (tokens, idx) => {
+      const lang = tokens[idx].info.trim() || '';
+      const lines = tokens[idx].content.replace(/\n$/, '').split('\n');
+      const codeLines = lines.map(line =>
+        line === ''
+          ? `<code><span leaf=""><br class="ProseMirror-trailingBreak"></span></code>`
+          : `<code><span leaf="">${escapeHtml(line)}</span></code>`
+      ).join('');
+      return `<section class="code-snippet__js"><pre class="code-snippet__js code-snippet code-snippet_nowrap" data-lang="${escapeHtml(lang)}">${codeLines}</pre></section>\n`;
+    };
+  } else {
+    // preview mode: fence is handled by @shikijs/markdown-it plugin applied in index.ts
+    // plain code_block fallback (indented code, no language info)
+    r['code_block'] = (tokens, idx) =>
+      `<pre style="${theme.pre}"><code style="${theme.preCode}">${escapeHtml(tokens[idx].content)}</code></pre>\n`;
+  }
 
   r['blockquote_open']  = () => `<blockquote style="${theme.blockquote}">`;
   r['blockquote_close'] = () => `</blockquote>\n`;
@@ -87,7 +98,7 @@ export function applyWeChatRules(md: MarkdownIt, theme: Theme): void {
   r['td_close']     = () => `</td>`;
 }
 
-function escapeHtml(str: string): string {
+export function escapeHtml(str: string): string {
   return str
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
