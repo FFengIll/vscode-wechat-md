@@ -23,11 +23,26 @@ export function applyWeChatRules(md: MarkdownIt, theme: Theme): void {
   r['code_inline'] = (tokens, idx) =>
     `<code style="${theme.inlineCode}">${escapeHtml(tokens[idx].content)}</code>`;
 
-  r['code_block'] = (tokens, idx) =>
-    `<pre style="${theme.pre}"><code style="${theme.preCode}">${escapeHtml(tokens[idx].content)}</code></pre>\n`;
+  r['code_block'] = (tokens, idx) => {
+    const lines = tokens[idx].content.replace(/\n$/, '').split('\n');
+    const codeLines = lines.map(line =>
+      line === ''
+        ? `<code><span leaf=""><br class="ProseMirror-trailingBreak"></span></code>`
+        : `<code><span leaf="">${escapeHtml(line)}</span></code>`
+    ).join('');
+    return `<section class="code-snippet__js"><pre class="code-snippet__js code-snippet code-snippet_nowrap" data-lang="">${codeLines}</pre></section>\n`;
+  };
 
-  r['fence'] = (tokens, idx) =>
-    `<pre style="${theme.pre}"><code style="${theme.preCode}">${escapeHtml(tokens[idx].content)}</code></pre>\n`;
+  r['fence'] = (tokens, idx) => {
+    const lang = tokens[idx].info.trim() || '';
+    const lines = tokens[idx].content.replace(/\n$/, '').split('\n');
+    const codeLines = lines.map(line =>
+      line === ''
+        ? `<code><span leaf=""><br class="ProseMirror-trailingBreak"></span></code>`
+        : `<code><span leaf="">${escapeHtml(line)}</span></code>`
+    ).join('');
+    return `<section class="code-snippet__js"><pre class="code-snippet__js code-snippet code-snippet_nowrap" data-lang="${escapeHtml(lang)}">${codeLines}</pre></section>\n`;
+  };
 
   r['blockquote_open']  = () => `<blockquote style="${theme.blockquote}">`;
   r['blockquote_close'] = () => `</blockquote>\n`;
