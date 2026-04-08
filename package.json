@@ -9,15 +9,37 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onLanguage:markdown"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "vscode-tingly-wechat.helloWorld",
-        "title": "Hello World"
+        "command": "wechat-md.preview",
+        "title": "WeChat: Preview Markdown",
+        "category": "WeChat MD"
+      },
+      {
+        "command": "wechat-md.copyHtml",
+        "title": "WeChat: Copy HTML to Clipboard",
+        "category": "WeChat MD"
       }
-    ]
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "wechat-md.preview",
+          "when": "editorLangId == markdown",
+          "group": "wechat"
+        },
+        {
+          "command": "wechat-md.copyHtml",
+          "when": "editorLangId == markdown",
+          "group": "wechat"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "pnpm run compile",
@@ -28,14 +50,18 @@
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.110.0",
+    "@types/markdown-it": "^14.1.2",
     "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
+    "@types/vscode": "^1.110.0",
     "@typescript-eslint/eslint-plugin": "^8.45.0",
     "@typescript-eslint/parser": "^8.45.0",
-    "eslint": "^9.36.0",
-    "typescript": "^5.9.3",
     "@vscode/test-cli": "^0.0.11",
-    "@vscode/test-electron": "^2.5.2"
+    "@vscode/test-electron": "^2.5.2",
+    "eslint": "^9.36.0",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "markdown-it": "^14.1.1"
   }
 }

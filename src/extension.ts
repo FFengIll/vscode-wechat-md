@@ -1,26 +1,30 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import { PreviewPanel } from './panel/PreviewPanel';
+import { WeChatRenderer } from './renderer';
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+  const renderer = new WeChatRenderer();
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "vscode-tingly-wechat" is now active!');
+  // Command 1: Open the WeChat Markdown preview panel
+  context.subscriptions.push(
+    vscode.commands.registerCommand('wechat-md.preview', () => {
+      PreviewPanel.createOrShow(context.extensionUri);
+    })
+  );
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('vscode-tingly-wechat.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from vscode-tingly-wechat!');
-	});
-
-	context.subscriptions.push(disposable);
+  // Command 2: Copy rendered HTML directly to clipboard (no panel needed)
+  context.subscriptions.push(
+    vscode.commands.registerCommand('wechat-md.copyHtml', async () => {
+      const editor = vscode.window.activeTextEditor;
+      if (!editor || editor.document.languageId !== 'markdown') {
+        vscode.window.showWarningMessage('请先打开一个 Markdown 文件。');
+        return;
+      }
+      const html = renderer.render(editor.document.getText());
+      await vscode.env.clipboard.writeText(html);
+      vscode.window.showInformationMessage('已复制微信公众号 HTML！请前往编辑器粘贴。');
+    })
+  );
 }
 
-// This method is called when your extension is deactivated
 export function deactivate() {}
