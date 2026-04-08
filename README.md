@@ -1,8 +1,16 @@
-# vscode-wechat-md
+# wechat-md / vscode-wechat-md
 
 微信公众号 Markdown 渲染器 —— 本地预览、一键复制、精确适配、快速发布。
 
 > 英文文档请见 [README.en.md](README.en.md)
+
+---
+
+> 仓库：https://github.com/FFengIll/vscode-wechat-md
+> 
+> 插件：https://marketplace.visualstudio.com/items?itemName=FFengIll.vscode-wechat-md
+>
+> VSCode：插件搜索 wechat-md
 
 ---
 
@@ -16,9 +24,9 @@
 
 点击工具栏 **✂️ 复制内容**，将带完整内联样式的富文本内容写入剪贴板（本地图片自动转换为 Base64），直接粘贴至微信公众号编辑器即可，无需任何手动调整。
 
-### 复制原始 HTML
+### 代码高亮
 
-点击工具栏 **📋 复制 HTML**，获取带内联样式的原始 HTML 字符串，方便二次处理或自定义发布流程。
+预览面板使用 [Shiki](https://shiki.style/) 渲染代码块，支持行号显示、卡片样式与语言标签。复制时自动转换为微信公众号兼容的格式。
 
 ### 自定义主题
 
@@ -77,6 +85,14 @@
   --wechat-inline-code-color: #d63384; /* 行内代码颜色 */
   --wechat-blockquote-bg: #f9f9f9; /* 引用块背景 */
   --wechat-max-width: 680px;       /* 内容最大宽度 */
+
+  /* 各级标题独立配置（字号 / 字重 / 颜色） */
+  --wechat-h1-font-size: 24px;    --wechat-h1-font-weight: bold;  --wechat-h1-color: #1a1a1a;
+  --wechat-h2-font-size: 20px;    --wechat-h2-font-weight: bold;  --wechat-h2-color: #1a1a1a;
+  --wechat-h3-font-size: 18px;    --wechat-h3-font-weight: bold;  --wechat-h3-color: #1a1a1a;
+  --wechat-h4-font-size: 16px;    --wechat-h4-font-weight: bold;  --wechat-h4-color: #333;
+  --wechat-h5-font-size: 15px;    --wechat-h5-font-weight: bold;  --wechat-h5-color: #555;
+  --wechat-h6-font-size: 14px;    --wechat-h6-font-weight: bold;  --wechat-h6-color: #666;
 }
 ```
 
@@ -86,10 +102,9 @@
 
 ## 命令列表
 
-| 命令                   | ID                   | 说明              |
-| ---------------------- | -------------------- | ----------------- |
-| Preview Markdown       | `wechat-md.preview`  | 打开/切换预览面板 |
-| Copy HTML to Clipboard | `wechat-md.copyHtml` | 复制原始 HTML     |
+| 命令             | ID                  | 说明              |
+| ---------------- | ------------------- | ----------------- |
+| Preview Markdown | `wechat-md.preview` | 打开/切换预览面板 |
 
 ---
 
