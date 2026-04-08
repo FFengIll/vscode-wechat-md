@@ -2,10 +2,11 @@
   "name": "vscode-wechat-md",
   "displayName": "wechat-md",
   "description": "微信公众号markdown渲染器，本地预览，一键复制，精确适配，快速发布",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "engines": {
     "vscode": "^1.100.0"
   },
+  "icon": "images/icon.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/FFengIll/vscode-wechat-md"
