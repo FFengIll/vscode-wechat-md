@@ -1,6 +1,6 @@
-import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as vscode from 'vscode';
 import { WeChatRenderer } from '../renderer';
 
 export class PreviewPanel {
@@ -83,12 +83,6 @@ export class PreviewPanel {
           const copyHtml = this.renderer.render(markdown, 'copy');
           const resolved = await resolveImagesAsBase64(copyHtml);
           this.panel.webview.postMessage({ command: 'doRichCopy', html: resolved });
-        } else if (message.command === 'copy') {
-          const markdown = this.lastMarkdownEditor?.document.getText() ?? '';
-          const copyHtml = this.renderer.render(markdown, 'copy');
-          const resolved = await resolveImagesAsBase64(copyHtml);
-          await vscode.env.clipboard.writeText(resolved);
-          this.panel.webview.postMessage({ command: 'copyDone' });
         } else if (message.command === 'openTheme') {
           this.openOrCreateCustomTheme();
         } else if (message.command === 'refresh') {
@@ -199,6 +193,48 @@ export class PreviewPanel {
     #toolbar button.secondary:hover { background: rgba(255,255,255,0.15); }
     #toolbar span { color: #fff; font-size: 12px; flex: 1; }
     #preview { padding: 24px 16px; }
+    /* Shiki code block card */
+    .shiki.wmd-code-block {
+      position: relative;
+      background: #fff !important;
+      border: 1px solid #e3e3e3;
+      border-radius: 8px;
+      margin: 1em 0;
+      padding: 0;
+      overflow: hidden;
+      counter-reset: line;
+    }
+    .shiki.wmd-code-block::before {
+      content: attr(data-lang-label);
+      position: absolute;
+      top: 8px; right: 12px;
+      font-size: 11px;
+      color: #e3e3e3;
+      font-family: sans-serif;
+    }
+    .shiki.wmd-code-block code {
+      display: block;
+      padding: 8px 16px 8px 0;
+      overflow-x: auto;
+    }
+    .shiki.wmd-code-block .line {
+      display: block;
+      padding-left: 0;
+      line-height: 1.7;
+    }
+    .shiki.wmd-code-block .line::before {
+      counter-increment: line;
+      content: counter(line);
+      display: inline-block;
+      width: 2.5em;
+      padding-right: 1em;
+      text-align: right;
+      color: #e3e3e3;
+      border-right: 1px solid #e1e4e8;
+      margin-right: 1em;
+      font-size: 12px;
+      user-select: none;
+    }
     /* Rich-copy staging area: must be in DOM and selectable, but invisible */
     #rich-copy-stage {
       position: fixed; top: -9999px; left: -9999px;
@@ -210,7 +246,6 @@ export class PreviewPanel {
 <body>
   <div id="toolbar">
     <button id="copyRichBtn">✂️ 复制内容</button>
-    <button id="copyBtn" class="secondary">📋 复制 HTML</button>
     <button id="themeBtn" class="secondary">🎨 自定义样式</button>
     <button id="refreshBtn" class="secondary">🔄 刷新</button>
     <span id="tip"></span>
@@ -227,12 +262,6 @@ export class PreviewPanel {
       var html = document.getElementById('preview').innerHTML;
       showTip('⏳ 处理中...');
       vscodeApi.postMessage({ command: 'copyRich', html: html });
-    });
-
-    // Plain HTML string copy (fallback)
-    document.getElementById('copyBtn').addEventListener('click', function() {
-      var html = document.getElementById('preview').innerHTML;
-      vscodeApi.postMessage({ command: 'copy', html: html });
     });
 
     document.getElementById('themeBtn').addEventListener('click', function() {
@@ -257,9 +286,7 @@ export class PreviewPanel {
         var ok = document.execCommand('copy');
         sel.removeAllRanges();
         stage.innerHTML = '';
-        showTip(ok ? '✅ 已复制，直接去公众号编辑器粘贴！' : '❌ 复制失败，请尝试「复制 HTML」');
-      } else if (msg.command === 'copyDone') {
-        showTip('✅ HTML 已复制！');
+        showTip(ok ? '✅ 已复制，直接去公众号编辑器粘贴！' : '❌ 复制失败');
       }
     });
 

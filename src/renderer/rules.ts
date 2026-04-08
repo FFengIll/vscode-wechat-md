@@ -39,7 +39,7 @@ export function applyWeChatRules(md: MarkdownIt, theme: Theme, mode: RenderMode 
     };
 
     r['fence'] = (tokens, idx) => {
-      const lang = tokens[idx].info.trim() || '';
+      const lang = normalizeLang(tokens[idx].info.trim());
       const lines = tokens[idx].content.replace(/\n$/, '').split('\n');
       const codeLines = lines.map(line =>
         line === ''
@@ -104,4 +104,25 @@ export function escapeHtml(str: string): string {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
+}
+
+// Normalize common language shorthands to WeChat's expected full names.
+const LANG_ALIASES: Record<string, string> = {
+  js:   'javascript',
+  ts:   'typescript',
+  py:   'python',
+  rb:   'ruby',
+  rs:   'rust',
+  sh:   'bash',
+  zsh:  'bash',
+  yml:  'yaml',
+  md:   'markdown',
+  kt:   'kotlin',
+  objc: 'objectivec',
+  'c++': 'cpp',
+};
+
+function normalizeLang(lang: string): string {
+  const lower = lang.toLowerCase();
+  return LANG_ALIASES[lower] ?? lower;
 }

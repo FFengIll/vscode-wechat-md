@@ -23,11 +23,6 @@
           "light": "images/icon-light.svg",
           "dark": "images/icon-dark.svg"
         }
-      },
-      {
-        "command": "wechat-md.copyHtml",
-        "title": "Copy HTML to Clipboard",
-        "category": "WeChat MD"
       }
     ],
     "menus": {
@@ -41,11 +36,6 @@
       "editor/context": [
         {
           "command": "wechat-md.preview",
-          "when": "editorLangId == markdown",
-          "group": "wechat"
-        },
-        {
-          "command": "wechat-md.copyHtml",
           "when": "editorLangId == markdown",
           "group": "wechat"
         }
@@ -74,6 +64,7 @@
   },
   "dependencies": {
     "@shikijs/markdown-it": "^4.0.2",
+    "@shikijs/transformers": "^4.0.2",
     "markdown-it": "^14.1.1",
     "shiki": "^4.0.2"
   }
