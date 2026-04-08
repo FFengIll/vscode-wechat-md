@@ -1,6 +1,6 @@
-# vscode-tingly-wechat README
+# vscode-wechat-md README
 
-This is the README for your extension "vscode-tingly-wechat". After writing up a brief description, we recommend including the following sections.
+This is the README for your extension "vscode-wechat-md". After writing up a brief description, we recommend including the following sections.
 
 ## Features
 

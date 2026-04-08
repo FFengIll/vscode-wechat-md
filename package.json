@@ -1,7 +1,7 @@
 {
-  "name": "vscode-tingly-wechat",
-  "displayName": "vscode-tingly-wechat",
-  "description": "微信公众号markdown渲染器",
+  "name": "vscode-wechat-md",
+  "displayName": "vscode-wechat-md",
+  "description": "微信公众号markdown渲染器，本地预览，一键复制，精确适配，快速发布",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.110.0"
@@ -17,7 +17,7 @@
     "commands": [
       {
         "command": "wechat-md.preview",
-        "title": "WeChat: Preview Markdown",
+        "title": "Preview Markdown",
         "category": "WeChat MD",
         "icon": {
           "light": "images/icon-light.svg",
@@ -26,7 +26,7 @@
       },
       {
         "command": "wechat-md.copyHtml",
-        "title": "WeChat: Copy HTML to Clipboard",
+        "title": "Copy HTML to Clipboard",
         "category": "WeChat MD"
       }
     ],
