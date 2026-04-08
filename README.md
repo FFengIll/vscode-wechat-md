@@ -106,4 +106,4 @@
 如有 Bug 或功能建议，请提交 Issue：[GitHub Issues](https://github.com/FFengIll/vscode-wechat-md/issues)
 
 
-<img src="images/wechat.png" width="200" alt="微信打赏二维码" />
+<img src="images/wechat.png" width="400" alt="微信打赏二维码" />
