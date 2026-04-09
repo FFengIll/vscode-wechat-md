@@ -1,5 +1,6 @@
 import MarkdownIt from 'markdown-it';
 import { Theme } from './theme';
+import { transformToWeChatFormat, normalizeLang as wechatNormalizeLang } from './wechatTransformer';
 
 export type RenderMode = 'preview' | 'copy';
 
@@ -29,24 +30,15 @@ export function applyWeChatRules(md: MarkdownIt, theme: Theme, mode: RenderMode 
 
   if (mode === 'copy') {
     r['code_block'] = (tokens, idx) => {
-      const lines = tokens[idx].content.replace(/\n$/, '').split('\n');
-      const codeLines = lines.map(line =>
-        line === ''
-          ? `<code><span leaf=""><br class="ProseMirror-trailingBreak"></span></code>`
-          : `<code><span leaf="">${escapeHtml(line)}</span></code>`
-      ).join('');
-      return `<section class="code-snippet__js"><pre class="code-snippet__js code-snippet code-snippet_nowrap" data-lang="">${codeLines}</pre></section>\n`;
+      const lang = '';
+      const content = tokens[idx].content;
+      return transformToWeChatFormat('', content, lang);
     };
 
     r['fence'] = (tokens, idx) => {
-      const lang = normalizeLang(tokens[idx].info.trim());
-      const lines = tokens[idx].content.replace(/\n$/, '').split('\n');
-      const codeLines = lines.map(line =>
-        line === ''
-          ? `<code><span leaf=""><br class="ProseMirror-trailingBreak"></span></code>`
-          : `<code><span leaf="">${escapeHtml(line)}</span></code>`
-      ).join('');
-      return `<section class="code-snippet__js"><pre class="code-snippet__js code-snippet code-snippet_nowrap" data-lang="${escapeHtml(lang)}">${codeLines}</pre></section>\n`;
+      const lang = wechatNormalizeLang(tokens[idx].info.trim());
+      const content = tokens[idx].content;
+      return transformToWeChatFormat('', content, lang);
     };
   } else {
     // preview mode: fence is handled by @shikijs/markdown-it plugin applied in index.ts

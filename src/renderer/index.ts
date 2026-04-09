@@ -28,8 +28,8 @@ export class WeChatRenderer {
   private _shikiPlugin: ((md: MarkdownIt) => void) | null = null;
 
   constructor() {
-    this.mdPreview = new MarkdownIt({ html: false, linkify: true, typographer: true });
-    this.mdCopy    = new MarkdownIt({ html: false, linkify: true, typographer: true });
+    this.mdPreview = new MarkdownIt({ html: true, linkify: true, typographer: true });
+    this.mdCopy    = new MarkdownIt({ html: true, linkify: true, typographer: true });
     applyWeChatRules(this.mdPreview, this._currentTheme, 'preview');
     applyWeChatRules(this.mdCopy,    this._currentTheme, 'copy');
   }
