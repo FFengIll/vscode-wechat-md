@@ -81,7 +81,8 @@ export class PreviewPanel {
         if (message.command === 'copyRich') {
           const markdown = this.lastMarkdownEditor?.document.getText() ?? '';
           const copyHtml = this.renderer.render(markdown, 'copy');
-          const resolved = await resolveImagesAsBase64(copyHtml);
+          const docDir = this.lastMarkdownEditor ? path.dirname(this.lastMarkdownEditor.document.uri.fsPath) : '';
+          const resolved = await resolveImagesAsBase64(copyHtml, docDir);
           this.panel.webview.postMessage({ command: 'doRichCopy', html: resolved });
         } else if (message.command === 'openTheme') {
           this.openOrCreateCustomTheme();
@@ -319,7 +320,8 @@ function getNonce(): string {
 
 // Replace vscode-webview-resource: and local file URIs in img src with base64 data URIs.
 // This is necessary because WeChat editor cannot load vscode-internal or file:// URLs.
-async function resolveImagesAsBase64(html: string): Promise<string> {
+// docDir is the directory of the markdown file, used to resolve relative image paths.
+async function resolveImagesAsBase64(html: string, docDir: string): Promise<string> {
   const pattern = /(<img[^>]+src=")([^"]+)(")/g;
   const matches: { full: string; pre: string; src: string; post: string }[] = [];
   let m: RegExpExecArray | null;
@@ -343,9 +345,16 @@ async function resolveImagesAsBase64(html: string): Promise<string> {
         filePath = decodeURIComponent(withoutScheme);
       } else if (src.startsWith('file://')) {
         filePath = decodeURIComponent(src.replace(/^file:\/\//, ''));
-      } else {
+      } else if (/^https?:\/\//i.test(src)) {
         // Plain remote URL — leave as-is
         continue;
+      } else {
+        // Handle relative paths (e.g., demo.png, ../images/icon.svg)
+        // Decode HTML entities first, then resolve against document directory
+        const decoded = src.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+        filePath = path.isAbsolute(decoded)
+          ? decoded
+          : docDir ? path.resolve(docDir, decoded) : decoded;
       }
 
       const data = fs.readFileSync(filePath);
