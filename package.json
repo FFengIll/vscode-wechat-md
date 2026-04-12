@@ -53,7 +53,7 @@
   },
   "scripts": {
     "vscode:prepublish": "pnpm run compile",
-    "compile": "tsc -p ./",
+    "compile": "tsc -p ./ && cp src/panel/defaultTheme.css out/panel/defaultTheme.css",
     "watch": "tsc -watch -p ./",
     "pretest": "pnpm run compile && pnpm run lint",
     "lint": "eslint src",
