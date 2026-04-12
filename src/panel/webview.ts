@@ -34,26 +34,47 @@ export function buildWebviewHtml(content: string, nonce: string): string {
     /* Shiki code block card */
     .shiki.wmd-code-block {
       position: relative;
-      background: #fff !important;
-      border: 1px solid #e3e3e3;
-      border-radius: 8px;
-      margin: 1em 0;
+      background: #f6f8fa !important;
+      border: 1px solid #d0d7de;
+      border-radius: 10px;
+      margin: 1.2em 0;
       padding: 0;
       overflow: hidden;
       counter-reset: line;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
     }
+    /* Header bar with traffic lights + lang label */
     .shiki.wmd-code-block::before {
+      content: '';
+      display: block;
+      height: 36px;
+      background: #e8eaed;
+      border-bottom: 1px solid #d0d7de;
+      // background-image:
+      //   radial-gradient(circle, #ff6057 6px, transparent 6px),
+      //   radial-gradient(circle, #febc2e 6px, transparent 6px),
+      //   radial-gradient(circle, #28c840 6px, transparent 6px);
+      background-repeat: no-repeat;
+      background-position: 14px center, 34px center, 54px center;
+    }
+    .shiki.wmd-code-block::after {
       content: attr(data-lang-label);
       position: absolute;
-      top: 8px; right: 12px;
-      font-size: 11px;
-      color: #e3e3e3;
-      font-family: sans-serif;
+      top: 0; left: 0; right: 0;
+      height: 36px;
+      line-height: 36px;
+      text-align: center;
+      font-size: 12px;
+      font-family: -apple-system, sans-serif;
+      color: #666;
+      font-weight: 500;
+      pointer-events: none;
     }
     .shiki.wmd-code-block code {
       display: block;
-      padding: 8px 16px 8px 0;
+      padding: 12px 16px 12px 0;
       overflow-x: auto;
+      background: transparent !important;
     }
     .shiki.wmd-code-block .line {
       display: block;
@@ -67,8 +88,8 @@ export function buildWebviewHtml(content: string, nonce: string): string {
       width: 2.5em;
       padding-right: 1em;
       text-align: right;
-      color: #e3e3e3;
-      border-right: 1px solid #e1e4e8;
+      color: #adb5bd;
+      border-right: 1px solid #d0d7de;
       margin-right: 1em;
       font-size: 12px;
       user-select: none;
