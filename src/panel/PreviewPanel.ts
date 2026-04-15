@@ -107,7 +107,7 @@ export class PreviewPanel {
       return;
     }
     // Re-read custom theme on each refresh so edits apply immediately
-    this.renderer.reloadTheme(this.getCustomThemePath());
+    this.renderer.reloadTheme(this.getCustomThemePath(), this.getThemeOverridePath());
     const markdown = editor.document.getText();
     const docDir = path.dirname(editor.document.uri.fsPath);
     const rendered = this.resolveLocalImages(this.renderer.render(markdown), docDir);
@@ -137,16 +137,31 @@ export class PreviewPanel {
     return fs.existsSync(p) ? p : null;
   }
 
+  private getThemeOverridePath(): string | null {
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (!workspaceFolders || workspaceFolders.length === 0) { return null; }
+    const p = path.join(workspaceFolders[0].uri.fsPath, '.wechat', 'theme.override.ts');
+    return fs.existsSync(p) ? p : null;
+  }
+
   private watchCustomTheme(): void {
     const workspaceFolders = vscode.workspace.workspaceFolders;
     if (!workspaceFolders || workspaceFolders.length === 0) { return; }
-    const watcher = vscode.workspace.createFileSystemWatcher(
+    const cssWatcher = vscode.workspace.createFileSystemWatcher(
       new vscode.RelativePattern(workspaceFolders[0], '.wechat/theme.css')
     );
-    watcher.onDidChange(() => this.refresh(), null, this.disposables);
-    watcher.onDidCreate(() => this.refresh(), null, this.disposables);
-    watcher.onDidDelete(() => this.refresh(), null, this.disposables);
-    this.disposables.push(watcher);
+    cssWatcher.onDidChange(() => this.refresh(), null, this.disposables);
+    cssWatcher.onDidCreate(() => this.refresh(), null, this.disposables);
+    cssWatcher.onDidDelete(() => this.refresh(), null, this.disposables);
+    this.disposables.push(cssWatcher);
+
+    const overrideWatcher = vscode.workspace.createFileSystemWatcher(
+      new vscode.RelativePattern(workspaceFolders[0], '.wechat/theme.override.ts')
+    );
+    overrideWatcher.onDidChange(() => this.refresh(), null, this.disposables);
+    overrideWatcher.onDidCreate(() => this.refresh(), null, this.disposables);
+    overrideWatcher.onDidDelete(() => this.refresh(), null, this.disposables);
+    this.disposables.push(overrideWatcher);
   }
 
   private openOrCreateCustomTheme(): void {

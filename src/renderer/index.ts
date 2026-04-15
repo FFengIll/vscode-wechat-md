@@ -1,5 +1,5 @@
 import MarkdownIt from 'markdown-it';
-import { buildTheme, loadThemeVars } from './theme';
+import { buildTheme, loadThemeVars, loadThemeOverride, applyThemeOverride } from './theme';
 import { applyWeChatRules, RenderMode } from './rules';
 
 // Shiki transformer: adds data-line-number to each line span and wraps the
@@ -44,10 +44,12 @@ export class WeChatRenderer {
     this.mdPreview.use(this._shikiPlugin);
   }
 
-  // Call this before render() to pick up the latest .wechat/theme.css.
+  // Call this before render() to pick up the latest .wechat/theme.css and .wechat/theme.override.ts.
   // Re-applies WeChat rules then re-applies shiki plugin so fence highlight is preserved.
-  reloadTheme(cssPath: string | null): void {
-    this._currentTheme = buildTheme(loadThemeVars(cssPath));
+  reloadTheme(cssPath: string | null, overridePath: string | null = null): void {
+    let theme = buildTheme(loadThemeVars(cssPath));
+    const overrideFn = loadThemeOverride(overridePath);
+    this._currentTheme = applyThemeOverride(theme, overrideFn);
     applyWeChatRules(this.mdPreview, this._currentTheme, 'preview');
     if (this._shikiPlugin) {
       this.mdPreview.use(this._shikiPlugin);

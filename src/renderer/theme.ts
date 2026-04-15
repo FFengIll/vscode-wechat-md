@@ -1,8 +1,10 @@
 import * as fs from 'fs';
+import * as path from 'path';
 
 // Default WeChat-compatible inline style values.
 // All styles must be inline — WeChat strips <style> blocks and external CSS.
 // Values here can be overridden by .wechat/theme.css CSS variables.
+// For advanced customization, you can also use .wechat/theme.override.ts
 
 export interface ThemeVars {
   accent: string;
@@ -18,14 +20,23 @@ export interface ThemeVars {
   h1FontSize: string;
   h1FontWeight: string;
   h1Color: string;
+  h1Bg: string;
+  h1Padding: string;
+  h1BorderRadius: string;
 
   h2FontSize: string;
   h2FontWeight: string;
   h2Color: string;
+  h2Bg: string;
+  h2Padding: string;
+  h2BorderRadius: string;
 
   h3FontSize: string;
   h3FontWeight: string;
   h3Color: string;
+  h3Bg: string;
+  h3Padding: string;
+  h3BorderRadius: string;
 
   h4FontSize: string;
   h4FontWeight: string;
@@ -51,8 +62,11 @@ export const defaultVars: ThemeVars = {
   maxWidth: '680px',
 
   h1FontSize: '24px', h1FontWeight: 'bold', h1Color: '#1a1a1a',
+  h1Bg: 'transparent', h1Padding: '0', h1BorderRadius: '0',
   h2FontSize: '20px', h2FontWeight: 'bold', h2Color: '#1a1a1a',
+  h2Bg: 'transparent', h2Padding: '0', h2BorderRadius: '0',
   h3FontSize: '18px', h3FontWeight: 'bold', h3Color: '#1a1a1a',
+  h3Bg: 'transparent', h3Padding: '0', h3BorderRadius: '0',
   h4FontSize: '16px', h4FontWeight: 'bold', h4Color: '#333',
   h5FontSize: '15px', h5FontWeight: 'bold', h5Color: '#555',
   h6FontSize: '14px', h6FontWeight: 'bold', h6Color: '#666',
@@ -80,12 +94,21 @@ export function loadThemeVars(cssPath: string | null): ThemeVars {
     vars.h1FontSize      = pick('h1-font-size')      ?? vars.h1FontSize;
     vars.h1FontWeight    = pick('h1-font-weight')    ?? vars.h1FontWeight;
     vars.h1Color         = pick('h1-color')          ?? vars.h1Color;
+    vars.h1Bg            = pick('h1-bg')             ?? vars.h1Bg;
+    vars.h1Padding       = pick('h1-padding')        ?? vars.h1Padding;
+    vars.h1BorderRadius  = pick('h1-border-radius')  ?? vars.h1BorderRadius;
     vars.h2FontSize      = pick('h2-font-size')      ?? vars.h2FontSize;
     vars.h2FontWeight    = pick('h2-font-weight')    ?? vars.h2FontWeight;
     vars.h2Color         = pick('h2-color')          ?? vars.h2Color;
+    vars.h2Bg            = pick('h2-bg')             ?? vars.h2Bg;
+    vars.h2Padding       = pick('h2-padding')        ?? vars.h2Padding;
+    vars.h2BorderRadius  = pick('h2-border-radius')  ?? vars.h2BorderRadius;
     vars.h3FontSize      = pick('h3-font-size')      ?? vars.h3FontSize;
     vars.h3FontWeight    = pick('h3-font-weight')    ?? vars.h3FontWeight;
     vars.h3Color         = pick('h3-color')          ?? vars.h3Color;
+    vars.h3Bg            = pick('h3-bg')             ?? vars.h3Bg;
+    vars.h3Padding       = pick('h3-padding')        ?? vars.h3Padding;
+    vars.h3BorderRadius  = pick('h3-border-radius')  ?? vars.h3BorderRadius;
     vars.h4FontSize      = pick('h4-font-size')      ?? vars.h4FontSize;
     vars.h4FontWeight    = pick('h4-font-weight')    ?? vars.h4FontWeight;
     vars.h4Color         = pick('h4-color')          ?? vars.h4Color;
@@ -117,15 +140,21 @@ export function buildTheme(v: ThemeVars) {
       `font-size: ${v.h1FontSize}`, `font-weight: ${v.h1FontWeight}`, `color: ${v.h1Color}`,
       'margin: 1.5em 0 0.6em', 'line-height: 1.4',
       'padding-bottom: 8px', `border-bottom: 2px solid ${v.accent}`,
+      `background: ${v.h1Bg}`, `padding: ${v.h1Padding}`, `border-radius: ${v.h1BorderRadius}`,
     ].join('; '),
 
     h2: [
       `font-size: ${v.h2FontSize}`, `font-weight: ${v.h2FontWeight}`, `color: ${v.h2Color}`,
       'margin: 1.3em 0 0.5em', 'line-height: 1.4',
       'padding-left: 10px', `border-left: 4px solid ${v.accent}`,
+      `background: ${v.h2Bg}`, `padding: ${v.h2Padding}`, `border-radius: ${v.h2BorderRadius}`,
     ].join('; '),
 
-    h3: [`font-size: ${v.h3FontSize}`, `font-weight: ${v.h3FontWeight}`, `color: ${v.h3Color}`, 'margin: 1.1em 0 0.4em', 'line-height: 1.4'].join('; '),
+    h3: [
+      `font-size: ${v.h3FontSize}`, `font-weight: ${v.h3FontWeight}`, `color: ${v.h3Color}`,
+      'margin: 1.1em 0 0.4em', 'line-height: 1.4',
+      `background: ${v.h3Bg}`, `padding: ${v.h3Padding}`, `border-radius: ${v.h3BorderRadius}`,
+    ].join('; '),
     h4: [`font-size: ${v.h4FontSize}`, `font-weight: ${v.h4FontWeight}`, `color: ${v.h4Color}`, 'margin: 1em 0 0.4em'].join('; '),
     h5: [`font-size: ${v.h5FontSize}`, `font-weight: ${v.h5FontWeight}`, `color: ${v.h5Color}`, 'margin: 0.8em 0 0.3em'].join('; '),
     h6: [`font-size: ${v.h6FontSize}`, `font-weight: ${v.h6FontWeight}`, `color: ${v.h6Color}`, 'margin: 0.8em 0 0.3em'].join('; '),
@@ -167,3 +196,26 @@ export function buildTheme(v: ThemeVars) {
 }
 
 export type Theme = ReturnType<typeof buildTheme>;
+
+// Theme override function type for advanced customization via .wechat/theme.override.ts
+export type ThemeOverrideFunction = (theme: Theme) => Partial<Theme>;
+
+// Load theme override from .wechat/theme.override.ts if it exists
+export function loadThemeOverride(overridePath: string | null): ThemeOverrideFunction | null {
+  if (!overridePath) { return null; }
+  try {
+    // Clear require cache to support hot-reload during development
+    delete require.cache[require.resolve(overridePath)];
+    const module = require(overridePath);
+    return typeof module.overrideTheme === 'function' ? module.overrideTheme : null;
+  } catch {
+    return null;
+  }
+}
+
+// Apply theme override to the base theme
+export function applyThemeOverride(theme: Theme, overrideFn: ThemeOverrideFunction | null): Theme {
+  if (!overrideFn) { return theme; }
+  const overrides = overrideFn(theme);
+  return { ...theme, ...overrides };
+}

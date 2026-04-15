@@ -1,6 +1,7 @@
 import MarkdownIt from 'markdown-it';
 import { Theme } from './theme';
 import { transformToWeChatFormat, normalizeLang as wechatNormalizeLang } from './wechatTransformer';
+import { parseVoteBlock, renderVoteHTML } from './vote';
 
 export type RenderMode = 'preview' | 'copy';
 
