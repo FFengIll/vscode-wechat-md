@@ -31,6 +31,7 @@ export function buildWebviewHtml(content: string, nonce: string): string {
     #toolbar button.secondary:hover { background: rgba(255,255,255,0.15); }
     #toolbar span { color: #fff; font-size: 12px; flex: 1; }
     #preview { padding: 24px 16px; }
+
     /* Shiki code block card */
     .shiki.wmd-code-block {
       position: relative;
@@ -50,12 +51,6 @@ export function buildWebviewHtml(content: string, nonce: string): string {
       height: 36px;
       background: #e8eaed;
       border-bottom: 1px solid #d0d7de;
-      // background-image:
-      //   radial-gradient(circle, #ff6057 6px, transparent 6px),
-      //   radial-gradient(circle, #febc2e 6px, transparent 6px),
-      //   radial-gradient(circle, #28c840 6px, transparent 6px);
-      background-repeat: no-repeat;
-      background-position: 14px center, 34px center, 54px center;
     }
     .shiki.wmd-code-block::after {
       content: attr(data-lang-label);
@@ -105,7 +100,7 @@ export function buildWebviewHtml(content: string, nonce: string): string {
 <body>
   <div id="toolbar">
     <button id="copyRichBtn">✂️ 复制内容</button>
-    <button id="themeBtn" class="secondary">🎨 自定义样式</button>
+    <button id="stylePanelBtn" class="secondary">🎨 样式管理</button>
     <button id="refreshBtn" class="secondary">🔄 刷新</button>
     <span id="tip"></span>
   </div>
@@ -123,8 +118,8 @@ export function buildWebviewHtml(content: string, nonce: string): string {
       vscodeApi.postMessage({ command: 'copyRich', html: html });
     });
 
-    document.getElementById('themeBtn').addEventListener('click', function() {
-      vscodeApi.postMessage({ command: 'openTheme' });
+    document.getElementById('stylePanelBtn').addEventListener('click', function() {
+      vscodeApi.postMessage({ command: 'openStylePanel' });
     });
 
     document.getElementById('refreshBtn').addEventListener('click', function() {

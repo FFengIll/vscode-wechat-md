@@ -4,6 +4,8 @@ import * as vscode from 'vscode';
 import { WeChatRenderer } from '../renderer';
 import { buildWebviewHtml } from './webview';
 import { resolveImagesAsBase64 } from './imageUtils';
+import { PresetManager } from '../renderer/PresetManager';
+import { StylePresetManager } from '../renderer/StylePresetManager';
 
 export class PreviewPanel {
   static currentPanel: PreviewPanel | undefined;
@@ -12,11 +14,13 @@ export class PreviewPanel {
   private readonly panel: vscode.WebviewPanel;
   private readonly renderer: WeChatRenderer;
   private disposables: vscode.Disposable[] = [];
+  private presetManager: PresetManager | null = null;
+  private stylePresetManager: StylePresetManager | null = null;
 
   // Track the last known markdown editor so we don't lose it when webview takes focus
   private lastMarkdownEditor: vscode.TextEditor | undefined;
 
-  static createOrShow(extensionUri: vscode.Uri): PreviewPanel {
+  static createOrShow(extensionUri: vscode.Uri, presetManager?: PresetManager): PreviewPanel {
     if (PreviewPanel.currentPanel) {
       // Always reveal in Beside column, never steal the editor column
       PreviewPanel.currentPanel.panel.reveal(vscode.ViewColumn.Beside, true);
@@ -39,7 +43,23 @@ export class PreviewPanel {
     );
 
     PreviewPanel.currentPanel = new PreviewPanel(panel);
+    PreviewPanel.currentPanel.setPresetManager(presetManager || null);
     return PreviewPanel.currentPanel;
+  }
+
+  setStylePresetManager(manager: StylePresetManager | null): void {
+    this.stylePresetManager = manager;
+    // Set reference in renderer too
+    if (this.renderer && manager) {
+      this.renderer.setStylePresetManager(manager);
+    }
+    if (manager) {
+      this.disposables.push(
+        manager.onDidChangePreset(() => {
+          this.refresh();
+        })
+      );
+    }
   }
 
   private constructor(panel: vscode.WebviewPanel) {
@@ -80,6 +100,7 @@ export class PreviewPanel {
 
     this.panel.webview.onDidReceiveMessage(
       async message => {
+        // Legacy commands (for backward compatibility)
         if (message.command === 'copyRich') {
           const markdown = this.lastMarkdownEditor?.document.getText() ?? '';
           const copyHtml = this.renderer.render(markdown, 'copy');
@@ -90,11 +111,28 @@ export class PreviewPanel {
           this.openOrCreateCustomTheme();
         } else if (message.command === 'refresh') {
           this.refresh();
+        } else if (message.command === 'openStylePanel') {
+          // Open the independent style management panel
+          vscode.commands.executeCommand('wechat-md.openStylePanel');
         }
       },
       null,
       this.disposables
     );
+  }
+
+  /**
+   * Set the preset manager for theme management
+   */
+  setPresetManager(manager: PresetManager | null): void {
+    this.presetManager = manager;
+    if (this.renderer && manager) {
+      this.renderer.setPresetManager(manager);
+      // Subscribe to preset changes
+      this.disposables.push(
+        manager.onDidChangePreset(() => this.refresh())
+      );
+    }
   }
 
   refresh(): void {
@@ -107,11 +145,39 @@ export class PreviewPanel {
       return;
     }
     // Re-read custom theme on each refresh so edits apply immediately
-    this.renderer.reloadTheme(this.getCustomThemePath(), this.getThemeOverridePath());
+    const cssPath = this.getCustomThemePath();
+    const overridePath = this.getThemeOverridePath();
+    this.renderer.reloadTheme(cssPath, overridePath);
+
+    // Apply custom style overrides from the panel
+    this.applyCustomStylesToRenderer();
+
     const markdown = editor.document.getText();
     const docDir = path.dirname(editor.document.uri.fsPath);
     const rendered = this.resolveLocalImages(this.renderer.render(markdown), docDir);
     this.panel.webview.html = buildWebviewHtml(rendered, getNonce());
+  }
+
+  /**
+   * Update only the preview content without reloading the entire webview
+   * This prevents the style panel from jumping when styles change
+   */
+  private updatePreviewContent(): void {
+    const editor = this.lastMarkdownEditor;
+    if (!editor) return;
+
+    // Apply custom style overrides from the panel
+    this.applyCustomStylesToRenderer();
+
+    const markdown = editor.document.getText();
+    const docDir = path.dirname(editor.document.uri.fsPath);
+    const rendered = this.resolveLocalImages(this.renderer.render(markdown), docDir);
+
+    // Send message to webview to update preview content only
+    this.panel.webview.postMessage({
+      type: 'updatePreviewContent',
+      html: rendered
+    });
   }
 
   // Replace local file paths in img src with webview URIs so the webview can load them.
@@ -180,15 +246,40 @@ export class PreviewPanel {
     vscode.window.showTextDocument(vscode.Uri.file(filePath));
   }
 
+  /**
+   * Apply custom style overrides to the renderer before rendering
+   */
+  private applyCustomStylesToRenderer(): void {
+    if (!this.stylePresetManager) return;
+
+    // Get base vars for CSS variable replacement
+    const cssPath = this.getCustomThemePath();
+    const overridePath = this.getThemeOverridePath();
+    this.presetManager?.setCssOverridePath(overridePath);
+    const baseVars = this.presetManager?.getVarsWithOverride(cssPath) || {};
+
+    // Apply style preset overrides with theme vars
+    this.stylePresetManager.setThemeVars(baseVars as any);
+    const styleOverrides = this.stylePresetManager.getAllStyleOverrides();
+    this.renderer.setStylePresetOverrides(styleOverrides);
+  }
+
   dispose(): void {
     PreviewPanel.currentPanel = undefined;
     this.panel.dispose();
     for (const d of this.disposables) { d.dispose(); }
     this.disposables = [];
+    if (this.presetManager) {
+      this.presetManager.dispose();
+    }
+    if (this.stylePresetManager) {
+      this.stylePresetManager.dispose();
+    }
   }
 }
 
-function getNonce(): string {
+// Export utility function for reuse
+export function getNonce(): string {
   let text = '';
   const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   for (let i = 0; i < 32; i++) {
