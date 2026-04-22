@@ -78,496 +78,399 @@ export class StylePanel {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline' 'nonce-${nonce}';">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
     body {
-      font-family: var(--vscode-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
-      background: var(--vscode-editorBackground, #1e1e1e);
-      color: var(--vscode-editorForeground, #cccccc);
-      padding: 16px;
-      line-height: 1.5;
-      overflow-y: auto;
-    }
-
-    h2 {
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 16px;
-      color: var(--vscode-foreground, #cccccc);
-      padding-bottom: 8px;
-      border-bottom: 1px solid var(--vscode-panelBorder, #3c3c3c);
-    }
-
-    .section {
-      margin-bottom: 24px;
-    }
-
-    .section-title {
-      font-size: 13px;
-      font-weight: 600;
-      margin-bottom: 12px;
-      color: var(--vscode-foreground, #cccccc);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    /* Preset Grid */
-    .preset-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
-      margin-bottom: 16px;
-    }
-
-    .preset-card {
-      background: var(--vscode-editorBackground, #1e1e1e);
-      border: 2px solid var(--vscode-panelBorder, #3c3c3c);
-      border-radius: 6px;
-      padding: 10px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .preset-card:hover {
-      border-color: var(--vscode-buttonHoverBackground, #3a3a3a);
-    }
-
-    .preset-card.active {
-      border-color: var(--vscode-buttonBackground, #0e639c);
-    }
-
-    .preset-colors {
-      display: flex;
-      gap: 4px;
-      margin-bottom: 8px;
-    }
-
-    .preset-color {
-      width: 20px;
-      height: 20px;
-      border-radius: 4px;
-      border: 1px solid var(--vscode-widgetBorder, #3c3c3c);
-    }
-
-    .preset-name {
+      font-family: var(--vscode-font-family);
       font-size: 12px;
-      font-weight: 600;
-      color: var(--vscode-foreground, #cccccc);
-    }
-
-    /* Accordion */
-    .accordion {
-      border: 1px solid var(--vscode-panelBorder, #3c3c3c);
-      border-radius: 6px;
-      margin-bottom: 8px;
-      overflow: hidden;
-    }
-
-    .accordion-header {
-      background: var(--vscode-editorBackground, #252526);
-      padding: 10px 12px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 13px;
-      font-weight: 500;
-      user-select: none;
-    }
-
-    .accordion-header:hover {
-      background: var(--vscode-toolbar-hoverBackground, #2a2d2e);
-    }
-
-    .accordion-icon {
-      transition: transform 0.2s;
-      font-size: 10px;
-    }
-
-    .accordion-icon.open {
-      transform: rotate(180deg);
-    }
-
-    .accordion-content {
-      display: none;
-      padding: 10px;
-      background: var(--vscode-sideBarBackground, #252526);
-    }
-
-    .accordion-content.open {
-      display: block;
-    }
-
-    /* Preset Chips */
-    .preset-chip-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 6px;
-      margin-bottom: 8px;
-    }
-
-    .preset-chip {
-      background: var(--vscode-editorBackground, #1e1e1e);
-      border: 1px solid var(--vscode-panelBorder, #3c3c3c);
-      border-radius: 6px;
-      padding: 8px;
-      cursor: pointer;
-      text-align: left;
-      font-size: 11px;
-      color: var(--vscode-descriptionForeground, #cccccc);
-      transition: all 0.15s;
-      min-height: 48px;
+      background: var(--vscode-sideBar-background);
+      color: var(--vscode-foreground);
+      line-height: 1.5;
+      overflow-x: hidden;
+      overflow-y: auto;
+      height: 100vh;
       display: flex;
       flex-direction: column;
-      justify-content: center;
     }
 
-    .preset-chip:hover {
-      border-color: var(--vscode-buttonBackground, #0e639c);
+    /* ── Header ── */
+    .panel-header {
+      padding: 12px 14px 0;
+      flex-shrink: 0;
     }
-
-    .preset-chip.active {
-      border-color: var(--vscode-buttonBackground, #0e639c);
-      background: rgba(14, 99, 156, 0.1);
-      color: var(--vscode-foreground, #cccccc);
-    }
-
-    .preset-chip-name {
+    .panel-title {
       font-size: 11px;
-      font-weight: 500;
-      color: var(--vscode-foreground, #cccccc);
-      margin-bottom: 2px;
-    }
-
-    .preset-chip.active .preset-chip-name {
-      color: var(--vscode-buttonForeground, #ffffff);
-    }
-
-    .preset-chip-desc {
-      font-size: 9px;
-      color: var(--vscode-descriptionForeground, #888);
-      line-height: 1.2;
-    }
-
-    /* Subsection titles */
-    .subsection-title {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--vscode-descriptionForeground, #888);
-      margin: 8px 0 6px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    /* Controls */
-    .control-group {
+      color: var(--vscode-descriptionForeground);
       margin-bottom: 10px;
     }
 
-    .control-label {
-      display: block;
+    /* ── Tab bar ── */
+    .tab-bar {
+      display: flex;
+      border-bottom: 1px solid var(--vscode-panelBorder);
+      gap: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+      flex-shrink: 0;
+    }
+    .tab-bar::-webkit-scrollbar { display: none; }
+
+    .tab {
+      flex: 1;
+      min-width: 0;
+      padding: 7px 6px 6px;
       font-size: 11px;
-      margin-bottom: 4px;
-      color: var(--vscode-descriptionForeground, #888);
+      font-weight: 500;
+      color: var(--vscode-descriptionForeground);
+      cursor: pointer;
+      border: none;
+      background: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      white-space: nowrap;
+      text-align: center;
+      transition: color 0.15s, border-color 0.15s;
+      user-select: none;
+    }
+    .tab:hover { color: var(--vscode-foreground); }
+    .tab.active {
+      color: var(--vscode-foreground);
+      border-bottom-color: var(--vscode-focusBorder, var(--vscode-buttonBackground));
+      font-weight: 600;
     }
 
-    .control-row {
+    /* ── Scroll area ── */
+    .scroll-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 14px 80px;
+    }
+
+    /* ── Tab pane ── */
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    /* ── Section label ── */
+    .group-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--vscode-descriptionForeground);
+      opacity: 0.7;
+      margin: 14px 0 6px;
+    }
+    .group-label:first-child { margin-top: 0; }
+
+    /* ── Theme preset cards (horizontal strip) ── */
+    .theme-strip {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .theme-card {
       display: flex;
       align-items: center;
-      gap: 6px;
-    }
-
-    .control-input[type="color"] {
-      width: 32px;
-      height: 28px;
-      border: 1px solid var(--vscode-inputBorder, #3c3c3c);
-      border-radius: 4px;
-      background: var(--vscode-editorBackground, #1e1e1e);
+      gap: 10px;
+      padding: 7px 10px;
+      border-radius: 5px;
       cursor: pointer;
-      padding: 0;
+      border: 1px solid transparent;
+      transition: background 0.12s, border-color 0.12s;
+      position: relative;
     }
-
-    .control-input[type="text"] {
-      flex: 1;
-      background: var(--vscode-inputBackground, #3c3c3c);
-      border: 1px solid var(--vscode-inputBorder, #3c3c3c);
-      color: var(--vscode-inputForeground, #cccccc);
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 12px;
+    .theme-card:hover {
+      background: var(--vscode-toolbar-hoverBackground);
     }
-
-    /* Action buttons */
-    .action-bar {
+    .theme-card.active {
+      background: var(--vscode-list-activeSelectionBackground);
+      color: var(--vscode-list-activeSelectionForeground);
+    }
+    .theme-card.active .theme-card-name {
+      color: var(--vscode-list-activeSelectionForeground);
+    }
+    .theme-swatches {
       display: flex;
-      gap: 8px;
-      padding: 12px 0;
-      border-top: 1px solid var(--vscode-panelBorder, #3c3c3c);
-      margin-top: 12px;
+      gap: 3px;
+      flex-shrink: 0;
+    }
+    .theme-swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 1px solid rgba(128,128,128,0.2);
+      flex-shrink: 0;
+    }
+    .theme-card-name {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--vscode-foreground);
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .theme-card-check {
+      font-size: 12px;
+      color: var(--vscode-list-activeSelectionForeground);
+      opacity: 0;
+      flex-shrink: 0;
+    }
+    .theme-card.active .theme-card-check { opacity: 1; }
+
+    /* ── Style preset chips ── */
+    .chip-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 5px;
+      margin-bottom: 4px;
+    }
+    .chip {
+      padding: 7px 9px;
+      border-radius: 4px;
+      border: 1px solid var(--vscode-panelBorder);
+      cursor: pointer;
+      background: transparent;
+      text-align: left;
+      transition: background 0.1s, border-color 0.1s;
+      position: relative;
+      overflow: hidden;
+    }
+    .chip::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 2px;
+      background: var(--vscode-focusBorder, var(--vscode-buttonBackground));
+      opacity: 0;
+      transition: opacity 0.12s;
+    }
+    .chip:hover {
+      background: var(--vscode-toolbar-hoverBackground);
+      border-color: var(--vscode-focusBorder);
+    }
+    .chip.active {
+      background: var(--vscode-list-activeSelectionBackground);
+      border-color: transparent;
+    }
+    .chip.active::before { opacity: 1; }
+    .chip-name {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--vscode-foreground);
+      display: block;
+      margin-bottom: 1px;
+    }
+    .chip.active .chip-name {
+      color: var(--vscode-list-activeSelectionForeground);
+    }
+    .chip-desc {
+      font-size: 9px;
+      color: var(--vscode-descriptionForeground);
+      display: block;
+      line-height: 1.3;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .chip.active .chip-desc {
+      color: var(--vscode-list-activeSelectionForeground);
+      opacity: 0.75;
     }
 
+    /* ── Footer action bar ── */
+    .action-bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      display: flex;
+      gap: 6px;
+      padding: 8px 14px;
+      background: var(--vscode-sideBar-background);
+      border-top: 1px solid var(--vscode-panelBorder);
+    }
     .btn {
       flex: 1;
-      background: var(--vscode-buttonBackground, #0e639c);
-      color: var(--vscode-buttonForeground, #ffffff);
+      padding: 6px 10px;
+      border-radius: 3px;
       border: none;
-      padding: 8px 12px;
-      border-radius: 4px;
-      font-size: 12px;
+      font-size: 11px;
+      font-weight: 500;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: opacity 0.15s;
     }
-
-    .btn:hover {
-      background: var(--vscode-buttonHoverBackground, #1177bb);
+    .btn:hover { opacity: 0.85; }
+    .btn-primary {
+      background: var(--vscode-buttonBackground);
+      color: var(--vscode-buttonForeground);
     }
-
     .btn-secondary {
-      background: var(--vscode-buttonSecondaryBackground, #3a3d41);
-      color: var(--vscode-buttonSecondaryForeground, #cccccc);
+      background: var(--vscode-button-secondaryBackground);
+      color: var(--vscode-button-secondaryForeground);
     }
 
-    .btn-secondary:hover {
-      background: var(--vscode-buttonSecondaryHoverBackground, #45494e);
-    }
-
-    /* Scrollbar */
-    ::-webkit-scrollbar {
-      width: 8px;
-    }
-    ::-webkit-scrollbar-track {
-      background: var(--vscode-scrollbarSliderBackground, #3c3c3c);
-    }
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb {
-      background: var(--vscode-scrollbarSliderHoverBackground, #4c4c4c);
-      border-radius: 4px;
+      background: var(--vscode-scrollbarSlider-background);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--vscode-scrollbarSlider-hoverBackground);
     }
   </style>
 </head>
 <body>
-  <h2>🎨 WeChat 样式管理</h2>
-
-  <!-- Theme Presets -->
-  <div class="section">
-    <div class="section-title">主题预设</div>
-    <div class="preset-grid" id="preset-grid"></div>
-  </div>
-
-  <!-- Heading Style Presets -->
-  <div class="section">
-    <div class="accordion">
-      <div class="accordion-header open" data-section="heading-presets">
-        <span>📄 标题样式预设</span>
-        <span class="accordion-icon open">▼</span>
-      </div>
-      <div class="accordion-content open" id="heading-presets-content">
-        <div class="subsection-title">H1 样式</div>
-        <div class="preset-chip-grid" id="h1-presets"></div>
-        <div class="subsection-title">H2 样式</div>
-        <div class="preset-chip-grid" id="h2-presets"></div>
-        <div class="subsection-title">H3 样式</div>
-        <div class="preset-chip-grid" id="h3-presets"></div>
-      </div>
+  <div class="panel-header">
+    <div class="panel-title">WeChat 样式</div>
+    <div class="tab-bar" id="tab-bar">
+      <button class="tab active" data-tab="theme">主题</button>
+      <button class="tab" data-tab="heading">标题</button>
+      <button class="tab" data-tab="block">引用</button>
+      <button class="tab" data-tab="list">列表</button>
+      <button class="tab" data-tab="misc">其他</button>
     </div>
   </div>
 
-  <!-- Other Element Presets -->
-  <div class="section">
-    <div class="accordion">
-      <div class="accordion-header" data-section="blockquote-presets">
-        <span>💬 引用样式</span>
-        <span class="accordion-icon">▼</span>
-      </div>
-      <div class="accordion-content" id="blockquote-presets-content">
-        <div class="preset-chip-grid" id="blockquote-presets"></div>
-      </div>
+  <div class="scroll-area">
+    <!-- Theme tab -->
+    <div class="tab-pane active" id="pane-theme">
+      <div class="group-label">主题预设</div>
+      <div class="theme-strip" id="preset-grid"></div>
     </div>
 
-    <div class="accordion">
-      <div class="accordion-header" data-section="list-presets">
-        <span>📋 列表样式</span>
-        <span class="accordion-icon">▼</span>
-      </div>
-      <div class="accordion-content" id="list-presets-content">
-        <div class="preset-chip-grid" id="list-presets"></div>
-      </div>
+    <!-- Heading tab -->
+    <div class="tab-pane" id="pane-heading">
+      <div class="group-label">H1 样式</div>
+      <div class="chip-grid" id="h1-presets"></div>
+      <div class="group-label">H2 样式</div>
+      <div class="chip-grid" id="h2-presets"></div>
+      <div class="group-label">H3 样式</div>
+      <div class="chip-grid" id="h3-presets"></div>
     </div>
 
-    <div class="accordion">
-      <div class="accordion-header" data-section="link-presets">
-        <span>🔗 链接样式</span>
-        <span class="accordion-icon">▼</span>
-      </div>
-      <div class="accordion-content" id="link-presets-content">
-        <div class="preset-chip-grid" id="link-presets"></div>
-      </div>
+    <!-- Block tab -->
+    <div class="tab-pane" id="pane-block">
+      <div class="group-label">引用样式</div>
+      <div class="chip-grid" id="blockquote-presets"></div>
     </div>
 
-    <div class="accordion">
-      <div class="accordion-header" data-section="image-presets">
-        <span>🖼️ 图片样式</span>
-        <span class="accordion-icon">▼</span>
-      </div>
-      <div class="accordion-content" id="image-presets-content">
-        <div class="preset-chip-grid" id="image-presets"></div>
-      </div>
+    <!-- List tab -->
+    <div class="tab-pane" id="pane-list">
+      <div class="group-label">列表样式</div>
+      <div class="chip-grid" id="list-presets"></div>
     </div>
 
-    <div class="accordion">
-      <div class="accordion-header" data-section="divider-presets">
-        <span>➖ 分割线样式</span>
-        <span class="accordion-icon">▼</span>
-      </div>
-      <div class="accordion-content" id="divider-presets-content">
-        <div class="preset-chip-grid" id="divider-presets"></div>
-      </div>
-    </div>
-
-    <div class="accordion">
-      <div class="accordion-header" data-section="table-presets">
-        <span>📊 表格样式</span>
-        <span class="accordion-icon">▼</span>
-      </div>
-      <div class="accordion-content" id="table-presets-content">
-        <div class="preset-chip-grid" id="table-presets"></div>
-      </div>
+    <!-- Misc tab -->
+    <div class="tab-pane" id="pane-misc">
+      <div class="group-label">链接样式</div>
+      <div class="chip-grid" id="link-presets"></div>
+      <div class="group-label">图片样式</div>
+      <div class="chip-grid" id="image-presets"></div>
+      <div class="group-label">分割线样式</div>
+      <div class="chip-grid" id="divider-presets"></div>
+      <div class="group-label">表格样式</div>
+      <div class="chip-grid" id="table-presets"></div>
     </div>
   </div>
 
-  <!-- Actions -->
   <div class="action-bar">
-    <button class="btn btn-secondary" id="reset-btn">重置所有</button>
-    <button class="btn btn-secondary" id="apply-btn">应用并刷新预览</button>
+    <button class="btn btn-secondary" id="reset-btn">重置</button>
+    <button class="btn btn-primary" id="apply-btn">应用预览</button>
   </div>
 
   <script nonce="${nonce}">
     (function() {
       const vscode = acquireVsCodeApi();
-      let presets = [];
+      let themePresets = [];
       let stylePresetsState = {};
 
-      // Initialize accordion state from VSCode state
-      const accordionState = vscode.getState()?.accordionState || {};
+      // ── Tab switching ──
+      const tabs = document.querySelectorAll('.tab');
+      const panes = document.querySelectorAll('.tab-pane');
+      const savedTab = vscode.getState()?.activeTab || 'theme';
 
-      // Setup accordion with state persistence
-      document.querySelectorAll('.accordion-header').forEach(header => {
-        const section = header.dataset.section;
+      function switchTab(tabId) {
+        tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === tabId));
+        panes.forEach(p => p.classList.toggle('active', p.id === 'pane-' + tabId));
+        const state = vscode.getState() || {};
+        state.activeTab = tabId;
+        vscode.setState(state);
+      }
 
-        // Restore state
-        if (accordionState[section] !== undefined) {
-          const icon = header.querySelector('.accordion-icon');
-          const content = header.nextElementSibling;
-          if (accordionState[section]) {
-            icon.classList.add('open');
-            content.classList.add('open');
-          } else {
-            icon.classList.remove('open');
-            content.classList.remove('open');
-          }
-        }
-
-        header.addEventListener('click', () => {
-          const icon = header.querySelector('.accordion-icon');
-          const content = header.nextElementSibling;
-          const isOpen = icon.classList.toggle('open');
-          content.classList.toggle('open', isOpen);
-
-          // Save state
-          const state = vscode.getState() || {};
-          state.accordionState = state.accordionState || {};
-          state.accordionState[section] = isOpen;
-          vscode.setState(state);
-        });
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => switchTab(tab.dataset.tab));
       });
+      switchTab(savedTab);
 
-      // Reset button
+      // ── Actions ──
       document.getElementById('reset-btn').addEventListener('click', () => {
         vscode.postMessage({ type: 'resetStylePresets' });
       });
-
-      // Apply button
       document.getElementById('apply-btn').addEventListener('click', () => {
         vscode.postMessage({ type: 'applyToPreview' });
       });
 
-      // Render theme presets
+      // ── Render theme cards ──
       function renderThemePresets() {
-        const grid = document.getElementById('preset-grid');
-        if (!grid) return;
-
-        grid.innerHTML = presets.map(preset => \`
-          <div class="preset-card \${preset.active ? 'active' : ''}" data-id="\${preset.id}">
-            <div class="preset-colors">
-              <div class="preset-color" style="background: \${preset.preview.primary}"></div>
-              <div class="preset-color" style="background: \${preset.preview.background}"></div>
-              <div class="preset-color" style="background: \${preset.preview.accent}"></div>
+        const strip = document.getElementById('preset-grid');
+        if (!strip) return;
+        strip.innerHTML = themePresets.map(p => \`
+          <div class="theme-card \${p.active ? 'active' : ''}" data-id="\${p.id}">
+            <div class="theme-swatches">
+              <div class="theme-swatch" style="background:\${p.preview.primary}"></div>
+              <div class="theme-swatch" style="background:\${p.preview.background}"></div>
+              <div class="theme-swatch" style="background:\${p.preview.accent}"></div>
             </div>
-            <div class="preset-name">\${preset.name}</div>
+            <span class="theme-card-name">\${p.name}</span>
+            <span class="theme-card-check">✓</span>
           </div>
         \`).join('');
-
-        document.querySelectorAll('.preset-card').forEach(card => {
+        strip.querySelectorAll('.theme-card').forEach(card => {
           card.addEventListener('click', () => {
-            const id = card.dataset.id;
-            vscode.postMessage({ type: 'selectThemePreset', presetId: id });
+            vscode.postMessage({ type: 'selectThemePreset', presetId: card.dataset.id });
           });
         });
       }
 
-      // Render style presets for a category
+      // ── Render style chips ──
       function renderStylePresets(category, presetList) {
         const container = document.getElementById(category + '-presets');
         if (!container) return;
-
-        container.innerHTML = presetList.map(preset => \`
-          <div class="preset-chip \${preset.active ? 'active' : ''}" data-category="\${category}" data-id="\${preset.id}">
-            <div class="preset-chip-name">\${preset.name}</div>
-            <div class="preset-chip-desc">\${preset.description}</div>
+        container.innerHTML = presetList.map(p => \`
+          <div class="chip \${p.active ? 'active' : ''}" data-category="\${category}" data-id="\${p.id}">
+            <span class="chip-name">\${p.name}</span>
+            <span class="chip-desc">\${p.description}</span>
           </div>
         \`).join('');
-
-        container.querySelectorAll('.preset-chip').forEach(chip => {
+        container.querySelectorAll('.chip').forEach(chip => {
           chip.addEventListener('click', function() {
-            const categoryId = this.dataset.category;
-            const presetId = this.dataset.id;
-
-            // Update active state
-            container.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
+            container.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
             this.classList.add('active');
-
-            // Send to extension
-            vscode.postMessage({
-              type: 'setStylePreset',
-              category: categoryId,
-              presetId: presetId
-            });
+            vscode.postMessage({ type: 'setStylePreset', category: this.dataset.category, presetId: this.dataset.id });
           });
         });
       }
 
-      // Handle messages from extension
-      window.addEventListener('message', (event) => {
-        const message = event.data;
-
-        switch (message.type) {
-          case 'updateThemePresets':
-            presets = message.presets || [];
-            renderThemePresets();
-            break;
-          case 'updateStylePresets':
-            if (message.category && message.presets) {
-              renderStylePresets(message.category, message.presets);
-            }
-            break;
-          case 'updateAllStylePresets':
-            stylePresetsState = message.state || {};
-            for (const category in stylePresetsState) {
-              renderStylePresets(category, stylePresetsState[category].presets);
-            }
-            break;
+      // ── Messages ──
+      window.addEventListener('message', ({ data: msg }) => {
+        if (msg.type === 'updateThemePresets') {
+          themePresets = msg.presets || [];
+          renderThemePresets();
+        } else if (msg.type === 'updateStylePresets') {
+          if (msg.category && msg.presets) renderStylePresets(msg.category, msg.presets);
+        } else if (msg.type === 'updateAllStylePresets') {
+          stylePresetsState = msg.state || {};
+          for (const cat in stylePresetsState) {
+            renderStylePresets(cat, stylePresetsState[cat].presets);
+          }
         }
       });
 
-      // Request initial data
       vscode.postMessage({ type: 'getInitialData' });
     })();
   </script>

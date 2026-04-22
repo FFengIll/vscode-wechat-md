@@ -38,27 +38,6 @@
         "title": "Open Style Management Panel",
         "category": "WeChat MD",
         "icon": "$(settings-gear)"
-      },
-      {
-        "command": "wechat-md.openUnifiedPanel",
-        "title": "Open Unified Panel (Preview + Dashboard)",
-        "category": "WeChat MD",
-        "icon": "$(layout)"
-      },
-      {
-        "command": "wechat-md.switchTheme",
-        "title": "Switch Theme",
-        "category": "WeChat MD",
-        "icon": {
-          "light": "images/icon-light.svg",
-          "dark": "images/icon-dark.svg"
-        }
-      },
-      {
-        "command": "wechat-md.openThemeDashboard",
-        "title": "Open Theme Dashboard (Legacy)",
-        "category": "WeChat MD",
-        "icon": "$(color-mode)"
       }
     ],
     "menus": {
