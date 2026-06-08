@@ -30,7 +30,7 @@
 
 ### 自定义主题
 
-点击工具栏 **🎨 自定义样式**，自动在工作区创建并打开 `.wechat/theme.css`。通过修改 CSS 变量即可控制配色、字号、行高等样式，保存后预览实时生效。
+点击工具栏 **🎨 自定义样式**，自动在工作区创建并打开 `.wechat/theme.css`（已废弃，保留用于向后兼容）。推荐通过样式管理面板切换主题预设和逐元素样式，或直接创建自定义 JSON 预设。
 
 ### 支持的 Markdown 元素
 
@@ -63,6 +63,10 @@
 - 编辑器标题栏点击预览图标
 - 命令面板（`Cmd+Shift+P` / `Ctrl+Shift+P`）执行 `WeChat MD: Preview Markdown`
 
+### 样式管理
+
+命令面板执行 `WeChat MD: Open Style Management Panel`，可在面板中切换主题预设、调整各元素装饰风格，所有更改实时生效。
+
 ### 复制内容到公众号
 
 1. 打开预览面板
@@ -73,82 +77,106 @@
 
 ## 自定义主题
 
-点击预览面板工具栏的 **🎨 自定义样式**，会在项目根目录生成 `.wechat/theme.css`，内含以下可配置变量：
+### 方式一：JSON 预设文件（推荐）
 
-```css
-:root {
-  --wechat-accent: #07C160;        /* 主色调（微信绿） */
-  --wechat-font-size: 16px;        /* 正文字号 */
-  --wechat-line-height: 1.8;       /* 行高 */
-  --wechat-text-color: #333;       /* 正文颜色 */
-  --wechat-code-bg: #f6f8fa;       /* 代码块背景 */
-  --wechat-inline-code-color: #d63384; /* 行内代码颜色 */
-  --wechat-blockquote-bg: #f9f9f9; /* 引用块背景 */
-  --wechat-max-width: 680px;       /* 内容最大宽度 */
+在 `.wechat/presets/` 目录下创建 JSON 文件（如 `my-custom.json`）：
 
-  /* 各级标题独立配置（字号 / 字重 / 颜色） */
-  --wechat-h1-font-size: 24px;    --wechat-h1-font-weight: bold;  --wechat-h1-color: #1a1a1a;
-  --wechat-h2-font-size: 20px;    --wechat-h2-font-weight: bold;  --wechat-h2-color: #1a1a1a;
-  --wechat-h3-font-size: 18px;    --wechat-h3-font-weight: bold;  --wechat-h3-color: #1a1a1a;
-  --wechat-h4-font-size: 16px;    --wechat-h4-font-weight: bold;  --wechat-h4-color: #333;
-  --wechat-h5-font-size: 15px;    --wechat-h5-font-weight: bold;  --wechat-h5-color: #555;
-  --wechat-h6-font-size: 14px;    --wechat-h6-font-weight: bold;  --wechat-h6-color: #666;
+```json
+{
+  "id": "my-custom",
+  "name": "My Custom Theme",
+  "description": "我的自定义主题",
+  "vars": {
+    "accent": "#FF6B6B",
+    "textColor": "#2C3E50",
+    "fontSize": "16px",
+    "lineHeight": "1.8",
+    "h1Color": "#1A1A1A",
+    "h2Color": "#FF6B6B",
+    "codeBg": "#F8F9FA",
+    "inlineCodeColor": "#E74C3C"
+  },
+  "preview": {
+    "primary": "#FF6B6B",
+    "background": "#FFFFFF",
+    "accent": "#FF6B6B"
+  }
 }
 ```
 
-修改后保存，预览面板即时更新，无需重启扩展。
+### 方式二：高级 CSS 扩展
+
+如需复杂渐变、自定义字体等 JSON 无法覆盖的场景，可在预设中添加 `customCSS` 字段：
+
+```json
+{
+  "id": "advanced-theme",
+  "name": "Advanced Theme",
+  "vars": {
+    "accent": "#667eea"
+  },
+  "customCSS": {
+    "h1": "background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff;",
+    "blockquote": "font-family: 'Georgia', serif; font-style: italic;",
+    "a": "text-decoration: underline;"
+  }
+}
+```
+
+**customCSS 说明**：
+- 键名：元素类型（`h1`, `h2`, `h3`, `p`, `blockquote`, `a`, `img`, `hr`, `table` 等）
+- 键值：原始 CSS 字符串，将追加到元素的内联样式中
+- 注意：微信公众号编辑器可能不支持部分高级 CSS 属性（如复杂渐变、自定义字体）
 
 ---
 
-## 主题预设系统
+## 样式管理
 
-### 概述
+### 样式管理面板
 
-扩展内置了 5 种精心设计的主题预设，支持一键切换、可视化调整和自定义预设创建。主题系统与 CSS 变量完全兼容，提供灵活的样式定制方案。
+通过命令面板打开 `WeChat MD: Open Style Management Panel`，在面板中可以：
 
-### 内置主题预设
+- **主题预设**：切换内置颜色主题（WeChat Green / Elegant Classic / Modern Bold / Minimal Clean / Tech Developer）
+- **逐元素样式**：为标题（H1/H2/H3）、引用块、列表、链接、图片、分割线、表格等元素分别选择装饰风格
+- 所有调整实时生效，无需重启
+
+### 主题预设
+
+内置 5 种颜色主题：
 
 | 预设名称 | 风格描述 | 特点 |
 |---------|---------|------|
 | **WeChat Green** (默认) | 专业简洁 | 经典微信绿，适合大部分内容类型 |
 | **Elegant Classic** | 经典编辑 | 温暖色调，标题更醒目，适合深度阅读 |
-| **Modern Bold** | 现代大胆 | 高对比度，加粗标题，蓝色主调，视觉冲击力强 |
+| **Modern Bold** | 现代大胆 | 高对比度，蓝色主调，视觉冲击力强 |
 | **Minimal Clean** | 极简干净 | 灰度配色，内容优先，减少视觉干扰 |
 | **Tech Developer** | 技术风格 | 深色背景，紫色强调，优化代码可读性 |
 
-### 切换主题
+### 逐元素样式预设
 
-通过命令面板快速切换主题预设：
+为每种元素提供多种装饰风格可选：
 
-1. 打开命令面板 (`Cmd+Shift+P` / `Ctrl+Shift+P`)
-2. 执行 `WeChat MD: Switch Theme`
-3. 从下拉列表中选择预设
-4. 预览面板自动更新为所选主题
+| 元素 | 可选风格示例 |
+|------|------------|
+| H1 标题 | 下划线、左竖条、背景色块、渐变背景、虚线框、阴影卡片、数字序号等 |
+| H2 标题 | 下划线、左竖条、主题背景、边框框、波浪线、数字序号等 |
+| H3 标题 | 下划线、左竖条、圆点、箭头、标签、花括号等 |
+| 引用块 | 左竖线、卡片式、渐变背景、虚线框、引号装饰等 |
+| 列表 | 箭头、星标、菱形、三角、勾选、括号数字等 |
+| 链接 | 主题色、粗体、背景色、虚线、箭头后缀、按钮式等 |
+| 图片 | 圆角、阴影、边框、拍立得、全宽、居中等 |
+| 分割线 | 虚线、点线、渐变、波浪、双线、文字装饰等 |
+| 表格 | 斑马纹、主题色表头、无边框、卡片式、现代等 |
 
-### 主题仪表板
-
-使用可视化仪表板进行高级主题定制：
-
-1. 打开命令面板
-2. 执行 `WeChat MD: Open Theme Dashboard`
-3. 在仪表板中可以：
-   - 预览所有可用预设的颜色方案
-   - 点击卡片快速切换主题
-   - 实时调整主色调、文字颜色、代码块颜色等
-   - 重置为当前预设的默认值
-   - 保存当前配置为新的自定义预设
-
-### 创建自定义预设
+### 创建自定义主题预设
 
 创建自定义预设有两种方式：
 
-#### 方式一：通过主题仪表板
+#### 方式一：通过样式管理面板
 
-1. 打开主题仪表板
-2. 调整颜色至满意效果
-3. 点击"保存为预设..."按钮
-4. 输入预设名称
-5. 预设文件自动保存到 `.wechat/presets/` 目录
+1. 命令面板执行 `WeChat MD: Open Style Management Panel`
+2. 在主题预设 Tab 中调整至满意效果
+3. 预设文件可手动保存到 `.wechat/presets/` 目录
 
 #### 方式二：手动创建预设文件
 
@@ -179,7 +207,7 @@
 
 ### 预设文件格式参考
 
-完整可配置的样式变量：
+完整可配置的样式变量（vars 字段）：
 
 ```json
 {
@@ -231,26 +259,29 @@
 }
 ```
 
-### 与 CSS 变量的兼容性
+---
 
-主题预设与 `.wechat/theme.css` CSS 变量完全兼容，优先级如下：
+### 优先级规则
 
-1. **CSS 变量优先**：`.wechat/theme.css` 中的设置会覆盖预设值
-2. **预设次之**：未在 CSS 中定义的变量使用预设值
-3. **默认值兜底**：两者都未定义时使用系统默认值
+当同时存在多个配置时，优先级从高到低：
 
-这种设计允许你：
-- 使用预设作为基础，通过 CSS 微调个别样式
-- 在不同预设间快速切换，同时保持特定的自定义样式
+1. **customCSS** — 高级 CSS 扩展（追加到元素样式）
+2. **vars** — 预设样式变量
+3. **系统默认值** — 内置默认样式
 
-示例：基于预设修改 H1 标题背景色
+示例：基于预设修改 H1 标题背景并添加渐变
 
-```css
-:root {
-  /* 仅修改 H1 背景，其他样式使用预设默认值 */
-  --wechat-h1-bg: #f0f9ff;
-  --wechat-h1-padding: 12px 16px;
-  --wechat-h1-border-radius: 8px;
+```json
+{
+  "vars": {
+    "accent": "#07C160",
+    "h1Bg": "#f0f9ff",
+    "h1Padding": "12px 16px",
+    "h1BorderRadius": "8px"
+  },
+  "customCSS": {
+    "h1": "background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);"
+  }
 }
 ```
 
@@ -261,8 +292,7 @@
 | 命令 | ID | 说明 |
 | ---------------- | ------------------- | ----------------- |
 | Preview Markdown | `wechat-md.preview` | 打开/切换预览面板 |
-| Switch Theme | `wechat-md.switchTheme` | 切换主题预设 |
-| Open Theme Dashboard | `wechat-md.openThemeDashboard` | 打开主题可视化仪表板 |
+| Open Style Management Panel | `wechat-md.openStylePanel` | 打开样式管理面板 |
 
 ---
 
@@ -270,7 +300,8 @@
 
 - 微信公众号编辑器不支持外部 CSS，本扩展所有样式均以**内联方式**注入，确保粘贴后格式完整保留。
 - 本地图片在**富文本复制**时自动转为 Base64 编码，无需手动上传即可在公众号编辑器中正常显示。
-- `.wechat/theme.css` 建议加入版本控制，便于团队共享统一样式。
+- `.wechat/presets/` 目录建议加入版本控制，便于团队共享统一样式。
+- `customCSS` 字段中的高级样式（如复杂渐变、自定义字体）可能在微信公众号编辑器中无法正常显示。
 
 ---
 
