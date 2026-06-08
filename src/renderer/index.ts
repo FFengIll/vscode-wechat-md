@@ -437,19 +437,21 @@ export class WeChatRenderer {
   // Re-applies WeChat rules then re-applies shiki plugin so fence highlight is preserved.
   reloadTheme(cssPath: string | null, overridePath: string | null = null): void {
     let theme: Theme;
+    let customCSS: Record<string, string> | undefined;
 
     if (this._presetManager) {
       // Use preset manager if available
       this._presetManager.setCssOverridePath(cssPath);
       const vars = this._presetManager.getVarsWithOverride();
-      theme = buildTheme(vars);
+      customCSS = this._presetManager.getActiveCustomCSS();
+      theme = buildTheme(vars, customCSS);
     } else {
       // Fall back to original behavior
       let themeVars = loadThemeVars(cssPath);
       theme = buildTheme(themeVars);
     }
 
-    // Apply override if exists
+    // Apply override if exists (legacy support, may be removed in future)
     const overrideFn = overridePath ? loadThemeOverride(overridePath) : null;
     this._currentTheme = overrideFn ? applyThemeOverride(theme, overrideFn) : theme;
 

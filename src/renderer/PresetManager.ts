@@ -93,6 +93,14 @@ export class PresetManager {
   }
 
   /**
+   * Get customCSS from the active preset
+   */
+  getActiveCustomCSS(): Record<string, string> | undefined {
+    const preset = this.getActivePreset();
+    return preset?.customCSS;
+  }
+
+  /**
    * Get a preset by ID
    */
   getPreset(id: string): ThemePreset | undefined {
@@ -171,7 +179,7 @@ export class PresetManager {
   /**
    * Save current color customizations as a new preset
    */
-  async saveAsPreset(name: string, vars: ThemeVars): Promise<boolean> {
+  async saveAsPreset(name: string, vars: ThemeVars, customCSS?: Record<string, string>): Promise<boolean> {
     if (!this.customPresetDir) {
       vscode.window.showErrorMessage('No workspace folder open');
       return false;
@@ -197,6 +205,11 @@ export class PresetManager {
         accent: vars.accent
       }
     };
+
+    // Include customCSS if provided
+    if (customCSS && Object.keys(customCSS).length > 0) {
+      newPreset.customCSS = customCSS;
+    }
 
     try {
       fs.writeFileSync(filePath, JSON.stringify(newPreset, null, 2), 'utf-8');

@@ -124,8 +124,8 @@ export function loadThemeVars(cssPath: string | null): ThemeVars {
   }
 }
 
-export function buildTheme(v: ThemeVars) {
-  return {
+export function buildTheme(v: ThemeVars, customCSS?: Record<string, string>) {
+  const baseTheme = {
     container: [
       'font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", sans-serif',
       `max-width: ${v.maxWidth}`,
@@ -138,21 +138,21 @@ export function buildTheme(v: ThemeVars) {
 
     h1: [
       `font-size: ${v.h1FontSize}`, `font-weight: ${v.h1FontWeight}`, `color: ${v.h1Color}`,
-      'margin: 1.5em 0 0.6em', 'line-height: 1.4',
+      'margin: 1.6em 0 0.8em', 'line-height: 1.4',
       'padding-bottom: 8px', `border-bottom: 2px solid ${v.accent}`,
       `background: ${v.h1Bg}`, `padding: ${v.h1Padding}`, `border-radius: ${v.h1BorderRadius}`,
     ].join('; '),
 
     h2: [
       `font-size: ${v.h2FontSize}`, `font-weight: ${v.h2FontWeight}`, `color: ${v.h2Color}`,
-      'margin: 1.3em 0 0.5em', 'line-height: 1.4',
+      'margin: 1.4em 0 0.7em', 'line-height: 1.4',
       'padding-left: 10px', `border-left: 4px solid ${v.accent}`,
       `background: ${v.h2Bg}`, `padding: ${v.h2Padding}`, `border-radius: ${v.h2BorderRadius}`,
     ].join('; '),
 
     h3: [
       `font-size: ${v.h3FontSize}`, `font-weight: ${v.h3FontWeight}`, `color: ${v.h3Color}`,
-      'margin: 1.1em 0 0.4em', 'line-height: 1.4',
+      'margin: 1.2em 0 0.6em', 'line-height: 1.4',
       `background: ${v.h3Bg}`, `padding: ${v.h3Padding}`, `border-radius: ${v.h3BorderRadius}`,
     ].join('; '),
     h4: [`font-size: ${v.h4FontSize}`, `font-weight: ${v.h4FontWeight}`, `color: ${v.h4Color}`, 'margin: 1em 0 0.4em'].join('; '),
@@ -193,6 +193,18 @@ export function buildTheme(v: ThemeVars) {
     th:    ['background-color: #f0f0f0', 'padding: 10px 12px', 'border: 1px solid #ddd', 'text-align: left', 'font-weight: bold', 'color: #333'].join('; '),
     td:    ['padding: 8px 12px', 'border: 1px solid #ddd', `color: ${v.textColor}`].join('; '),
   };
+
+  // Apply customCSS extensions if provided
+  if (customCSS) {
+    for (const [element, css] of Object.entries(customCSS)) {
+      if (css && element in baseTheme) {
+        // Append custom CSS to the base style
+        baseTheme[element as keyof typeof baseTheme] += ';' + css;
+      }
+    }
+  }
+
+  return baseTheme;
 }
 
 export type Theme = ReturnType<typeof buildTheme>;

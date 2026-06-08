@@ -18,6 +18,12 @@ export interface ThemePreset {
   // Style variables (extends existing ThemeVars)
   vars: ThemeVars;
 
+  // Advanced CSS extensions for scenarios not covered by standard vars
+  // e.g., complex gradients, custom fonts, pseudo-elements
+  // Keys are element names: 'h1', 'h2', 'h3', 'p', 'blockquote', etc.
+  // Values are raw CSS strings that are appended to the element's inline style
+  customCSS?: Record<string, string>;
+
   // Optional: Future expansion
   decorations?: {
     h1Divider?: boolean;
