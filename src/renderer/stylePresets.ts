@@ -51,7 +51,7 @@ export const h1Styles: StylePreset[] = [
     id: 'h1-background',
     name: '背景色块',
     description: '圆角背景色',
-    css: 'background: var(--wechat-accent); color: #fff; padding: 12px 20px; border-radius: 8px;'
+    css: 'background: var(--wechat-accent); color: #fff; padding: 12px 20px; border-radius: 8px; margin: 1.8em 0 1em;'
   },
   {
     id: 'h1-center-line',
@@ -81,19 +81,19 @@ export const h1Styles: StylePreset[] = [
     id: 'h1-dashed-box',
     name: '虚线框',
     description: '虚线边框',
-    css: 'border: 2px dashed var(--wechat-accent); padding: 12px 16px; border-radius: 8px;'
+    css: 'border: 2px dashed var(--wechat-accent); padding: 12px 16px; border-radius: 8px; margin: 1.8em 0 1em;'
   },
   {
     id: 'h1-gradient-bg',
     name: '渐变背景',
     description: '渐变色背景',
-    css: 'background: linear-gradient(135deg, var(--wechat-accent) 0%, #333 100%); color: #fff; padding: 16px 24px; border-radius: 12px;'
+    css: 'background: linear-gradient(135deg, var(--wechat-accent) 0%, #333 100%); color: #fff; padding: 16px 24px; border-radius: 12px; margin: 1.8em 0 1em;'
   },
   {
     id: 'h1-shadow',
     name: '阴影效果',
     description: '卡片阴影',
-    css: 'background: #fff; padding: 16px 24px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);'
+    css: 'background: #fff; padding: 16px 24px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin: 1.8em 0 1em;'
   },
   {
     id: 'h1-bracket',
@@ -157,19 +157,19 @@ export const h2Styles: StylePreset[] = [
     id: 'h2-background',
     name: '浅色背景',
     description: '浅色背景块',
-    css: 'background: rgba(0,0,0,0.03); padding: 8px 12px; border-radius: 6px;'
+    css: 'background: rgba(0,0,0,0.03); padding: 8px 12px; border-radius: 6px; margin: 1.4em 0 0.8em;'
   },
   {
     id: 'h2-accent-bg',
     name: '主题背景',
     description: '主题色背景',
-    css: 'background: var(--wechat-accent); color: #fff; padding: 8px 16px; border-radius: 6px; display: inline-block;'
+    css: 'background: var(--wechat-accent); color: #fff; padding: 8px 16px; border-radius: 6px; display: inline-block; margin: 1.4em 0 0.8em;'
   },
   {
     id: 'h2-border-box',
     name: '边框框',
     description: '边框包围',
-    css: 'border: 1px solid var(--wechat-accent); padding: 8px 16px; border-radius: 6px; display: inline-block;'
+    css: 'border: 1px solid var(--wechat-accent); padding: 8px 16px; border-radius: 6px; display: inline-block; margin: 1.4em 0 0.8em;'
   },
   {
     id: 'h2-center',
@@ -181,7 +181,7 @@ export const h2Styles: StylePreset[] = [
     id: 'h2-dashed',
     name: '虚线框',
     description: '虚线边框',
-    css: 'border: 1px dashed var(--wechat-accent); padding: 8px 16px; border-radius: 6px;'
+    css: 'border: 1px dashed var(--wechat-accent); padding: 8px 16px; border-radius: 6px; margin: 1.4em 0 0.8em;'
   },
   {
     id: 'h2-wave',
@@ -227,7 +227,7 @@ export const h3Styles: StylePreset[] = [
     id: 'h3-background',
     name: '背景色',
     description: '浅色背景',
-    css: 'background: rgba(0,0,0,0.02); padding: 4px 8px; border-radius: 4px; display: inline;'
+    css: 'background: rgba(0,0,0,0.02); padding: 4px 8px; border-radius: 4px; display: inline; margin: 1.2em 0 0.6em;'
   },
   {
     id: 'h3-inline',
@@ -254,7 +254,7 @@ export const h3Styles: StylePreset[] = [
     id: 'h3-tag',
     name: '标签',
     description: '标签样式',
-    css: 'background: var(--wechat-accent); color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.9em;'
+    css: 'background: var(--wechat-accent); color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.9em; margin: 1.2em 0 0.6em;'
   }
 ];
 
