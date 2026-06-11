@@ -18,6 +18,7 @@ export interface SelectedPresets {
   image?: string;
   divider?: string;
   table?: string;
+  inlineCode?: string;
 }
 
 /**
@@ -205,7 +206,8 @@ export class StylePresetManager {
       link: '.wmd-a, a',
       image: '.wmd-img, img',
       divider: '.wmd-hr, hr',
-      table: '.wmd-table, table'
+      table: '.wmd-table, table',
+      inlineCode: '.wmd-code, code'
     };
     return selectors[category] || category;
   }

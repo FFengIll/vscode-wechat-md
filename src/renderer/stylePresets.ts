@@ -673,6 +673,73 @@ export const tableStyles: StylePreset[] = [
 ];
 
 // ============================================================================
+// INLINE CODE STYLES
+// ============================================================================
+
+export const inlineCodeStyles: StylePreset[] = [
+  {
+    id: 'inline-code-default',
+    name: '默认',
+    description: '灰色背景',
+    css: 'background-color: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-size: 14px;'
+  },
+  {
+    id: 'inline-code-accent',
+    name: '主题色',
+    description: '主题色背景',
+    css: 'background-color: var(--wechat-accent); color: #fff; padding: 2px 6px; border-radius: 3px; font-size: 14px;'
+  },
+  {
+    id: 'inline-code-border',
+    name: '边框',
+    description: '带边框样式',
+    css: 'border: 1px solid var(--wechat-accent); padding: 2px 6px; border-radius: 3px; font-size: 14px; color: var(--wechat-inline-code-color);'
+  },
+  {
+    id: 'inline-code-card',
+    name: '卡片',
+    description: '圆角卡片',
+    css: 'background: #f9f9f9; padding: 3px 8px; border-radius: 6px; border: 1px solid #e0e0e0; font-size: 14px; color: var(--wechat-inline-code-color);'
+  },
+  {
+    id: 'inline-code-highlight',
+    name: '高亮',
+    description: '黄色高亮',
+    css: 'background: linear-gradient(120deg, #fef9c3 0%, #fef08a 100%); padding: 2px 6px; border-radius: 3px; font-size: 14px; color: #854d0e;'
+  },
+  {
+    id: 'inline-code-dark',
+    name: '深色',
+    description: '深色代码风格',
+    css: 'background: #1e1e1e; color: #d4d4d4; padding: 3px 8px; border-radius: 4px; font-size: 13px;'
+  },
+  {
+    id: 'inline-code-minimal',
+    name: '简约',
+    description: '无背景',
+    css: 'color: var(--wechat-accent); font-size: 14px; font-family: "SFMono-Regular", Consolas, monospace;'
+  },
+  {
+    id: 'inline-code-tag',
+    name: '标签',
+    description: '标签样式',
+    css: 'background: var(--wechat-accent); color: #fff; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 500;'
+  },
+  {
+    id: 'inline-code-dashed',
+    name: '虚线框',
+    description: '虚线边框',
+    css: 'border: 1px dashed var(--wechat-accent); padding: 2px 6px; border-radius: 3px; background: rgba(0,0,0,0.02); font-size: 14px; color: var(--wechat-inline-code-color);'
+  },
+  {
+    id: 'inline-code-gradient',
+    name: '渐变',
+    description: '渐变背景',
+    css: 'background: linear-gradient(135deg, var(--wechat-accent) 0%, rgba(255,255,255,0.3) 100%); color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 14px;'
+  }
+];
+
+// ============================================================================
 // EXPORT ALL
 // ============================================================================
 
@@ -685,7 +752,8 @@ export const allStylePresets = {
   link: linkStyles,
   image: imageStyles,
   divider: dividerStyles,
-  table: tableStyles
+  table: tableStyles,
+  inlineCode: inlineCodeStyles
 };
 
 export type StylePresetCategory = keyof typeof allStylePresets;

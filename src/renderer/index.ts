@@ -322,6 +322,17 @@ export class WeChatRenderer {
     }
 
     // ============================================================================
+    // INLINE CODE STYLES
+    // ============================================================================
+    if (overrides.inlineCode && overrides.inlineCode !== 'inline-code-default') {
+      const css = getCSS('inlineCode', overrides.inlineCode);
+      r['code_inline'] = (tokens: any, idx: number) => {
+        const content = tokens[idx].content;
+        return `<code style="${css}">${this._escapeHtml(content)}</code>`;
+      };
+    }
+
+    // ============================================================================
     // DIVIDER STYLES
     // ============================================================================
     if (overrides.divider && overrides.divider !== 'hr-default') {
@@ -414,6 +425,9 @@ export class WeChatRenderer {
     }
     if (overrides.image) {
       rCopy['image'] = r['image'];
+    }
+    if (overrides.inlineCode) {
+      rCopy['code_inline'] = r['code_inline'];
     }
     if (overrides.divider) {
       rCopy['hr'] = r['hr'];

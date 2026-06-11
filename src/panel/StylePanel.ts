@@ -375,6 +375,8 @@ export class StylePanel {
       <div class="chip-grid" id="divider-presets"></div>
       <div class="group-label">表格样式</div>
       <div class="chip-grid" id="table-presets"></div>
+      <div class="group-label">行内代码样式</div>
+      <div class="chip-grid" id="inlineCode-presets"></div>
     </div>
   </div>
 
