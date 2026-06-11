@@ -28,12 +28,12 @@ Click **🎨 Custom Style** in the toolbar to generate and open `.wechat/theme.c
 
 | Element | Notes |
 |---------|-------|
-| Headings h1–h6 | Hierarchical styles; h1/h2 decorated with WeChat green borders |
+| Headings h1–h6 | Hierarchical styles; clean by default, decorations (borders/backgrounds) available via style presets |
 | Paragraphs | Tuned for WeChat body text layout |
 | Inline code | Highlighted with background tint |
 | Code blocks | Both fenced and indented styles supported |
 | Blockquotes | Left border + background color |
-| Unordered / ordered lists | Full nesting support |
+| Unordered / ordered lists | Full nesting support; marker and text on the same line |
 | Bold / italic | |
 | Links | `href` preserved |
 | Images | Auto-centered; local images work in both preview and copy |
