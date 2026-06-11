@@ -139,14 +139,12 @@ export function buildTheme(v: ThemeVars, customCSS?: Record<string, string>) {
     h1: [
       `font-size: ${v.h1FontSize}`, `font-weight: ${v.h1FontWeight}`, `color: ${v.h1Color}`,
       'margin: 1.6em 0 0.8em', 'line-height: 1.4',
-      'padding-bottom: 8px', `border-bottom: 2px solid ${v.accent}`,
       `background: ${v.h1Bg}`, `padding: ${v.h1Padding}`, `border-radius: ${v.h1BorderRadius}`,
     ].join('; '),
 
     h2: [
       `font-size: ${v.h2FontSize}`, `font-weight: ${v.h2FontWeight}`, `color: ${v.h2Color}`,
       'margin: 1.4em 0 0.7em', 'line-height: 1.4',
-      'padding-left: 10px', `border-left: 4px solid ${v.accent}`,
       `background: ${v.h2Bg}`, `padding: ${v.h2Padding}`, `border-radius: ${v.h2BorderRadius}`,
     ].join('; '),
 
