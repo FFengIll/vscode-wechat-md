@@ -255,6 +255,12 @@ export class StylePanel {
     .tt-thumb-title { font-size: 13px; font-weight: 700; line-height: 1.2; }
     .tt-thumb-bar   { height: 2px; border-radius: 1px; width: 55%; }
     .tt-thumb-body  { font-size: 10px; opacity: 0.75; }
+    .tt-hint {
+      margin-top: 6px;
+      font-size: 10px;
+      color: var(--vscode-descriptionForeground);
+      opacity: 0.85;
+    }
     .theme-card-check {
       font-size: 12px;
       color: var(--vscode-list-activeSelectionForeground);
@@ -464,6 +470,7 @@ export class StylePanel {
       // ── Floating preview tooltip ──
       const tooltip = document.getElementById('preview-tooltip');
       let hideTimer = null;
+      let currentAccent = '#07C160';
 
       function positionTooltip(anchorEl) {
         const rect = anchorEl.getBoundingClientRect();
@@ -491,9 +498,15 @@ export class StylePanel {
       }
 
       // Strip pseudo-class/pseudo-element blocks (&:before, &:after, &.x {...})
-      // so what remains are safe direct CSS properties for inline style use
+      // so what remains are safe direct CSS properties for inline style use.
+      // Also resolve var(--wechat-accent) to the current theme accent color,
+      // since inline styles can't inherit the variable reliably in the tooltip.
       function safeInlineStyle(css) {
-        return (css || '').replace(/&[^{]*\{[^}]*\}/g, '').replace(/\s+/g, ' ').trim();
+        return (css || '')
+          .replace(/&[^{]*\{[^}]*\}/g, '')
+          .replace(/var\(--wechat-accent\)/g, currentAccent)
+          .replace(/\s+/g, ' ')
+          .trim();
       }
 
       const PREVIEW_SAMPLE = {
@@ -518,7 +531,15 @@ export class StylePanel {
         } else {
           content = \`<div style="\${safeStyle};margin:0;font-size:12px;line-height:1.6;">\${sample}</div>\`;
         }
-        return \`<div class="tt-label">\${preset.name}</div>\${content}\`;
+        // Presets relying on ::before/::after pseudo-elements (arrows, numbered
+        // markers, quote marks, etc.) lose their decoration in inline preview —
+        // append the description as a textual hint so the effect isn't blank.
+        let hint = '';
+        const hasPseudo = /&[^{]*\{/.test(preset.css || '');
+        if (hasPseudo && preset.description) {
+          hint = \`<div class="tt-hint">\${preset.description}</div>\`;
+        }
+        return \`<div class="tt-label">\${preset.name}</div>\${content}\${hint}\`;
       }
 
       function buildThemeTooltip(preset) {
@@ -587,6 +608,10 @@ export class StylePanel {
       window.addEventListener('message', ({ data: msg }) => {
         if (msg.type === 'updateThemePresets') {
           themePresets = msg.presets || [];
+          if (msg.accent) {
+            currentAccent = msg.accent;
+            tooltip.style.setProperty('--wechat-accent', currentAccent);
+          }
           renderThemePresets();
         } else if (msg.type === 'updateStylePresets') {
           if (msg.category && msg.presets) renderStylePresets(msg.category, msg.presets);
@@ -670,9 +695,11 @@ export class StylePanel {
 
     const presets = this.presetManager.listPresets();
     const activeId = this.presetManager.getActivePreset()?.id;
+    const accent = this.presetManager.getVarsWithOverride()?.accent || '#07C160';
 
     this.panel.webview.postMessage({
       type: 'updateThemePresets',
+      accent,
       presets: presets.map((p: any) => ({
         ...p,
         active: p.id === activeId
