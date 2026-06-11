@@ -214,6 +214,47 @@ export class StylePanel {
       text-overflow: ellipsis;
       white-space: nowrap;
     }
+
+    /* ── Floating preview tooltip (shared by theme cards & style chips) ── */
+    #preview-tooltip {
+      position: fixed;
+      z-index: 9999;
+      min-width: 160px;
+      max-width: 240px;
+      padding: 10px 12px;
+      background: var(--vscode-editorWidget-background, var(--vscode-editor-background));
+      border: 1px solid var(--vscode-panelBorder);
+      border-radius: 6px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.12s;
+      font-size: 11px;
+      color: var(--vscode-foreground);
+      line-height: 1.5;
+    }
+    #preview-tooltip.visible { opacity: 1; }
+    .tt-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--vscode-descriptionForeground);
+      opacity: 0.7;
+      margin-bottom: 6px;
+    }
+    /* Theme thumb inside tooltip */
+    .tt-theme-thumb {
+      border-radius: 5px;
+      overflow: hidden;
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .tt-thumb-title { font-size: 13px; font-weight: 700; line-height: 1.2; }
+    .tt-thumb-bar   { height: 2px; border-radius: 1px; width: 55%; }
+    .tt-thumb-body  { font-size: 10px; opacity: 0.75; }
     .theme-card-check {
       font-size: 12px;
       color: var(--vscode-list-activeSelectionForeground);
@@ -385,6 +426,9 @@ export class StylePanel {
     <button class="btn btn-primary" id="apply-btn">应用预览</button>
   </div>
 
+  <!-- Shared floating preview tooltip -->
+  <div id="preview-tooltip"></div>
+
   <script nonce="${nonce}">
     (function() {
       const vscode = acquireVsCodeApi();
@@ -417,6 +461,77 @@ export class StylePanel {
         vscode.postMessage({ type: 'applyToPreview' });
       });
 
+      // ── Floating preview tooltip ──
+      const tooltip = document.getElementById('preview-tooltip');
+      let hideTimer = null;
+
+      function positionTooltip(anchorEl) {
+        const rect = anchorEl.getBoundingClientRect();
+        const ttW = 240;
+        const ttH = 120; // estimated tooltip height
+        // Horizontally: align to anchor left, clamp so it doesn't overflow right edge
+        const left = Math.min(rect.left, window.innerWidth - ttW - 4);
+        // Vertically: prefer below, fall back to above if not enough room
+        const below = rect.bottom + 6;
+        const above = rect.top - ttH - 6;
+        const top = (below + ttH < window.innerHeight) ? below : Math.max(4, above);
+        tooltip.style.left = left + 'px';
+        tooltip.style.top  = top + 'px';
+      }
+
+      function showTooltip(anchorEl, html) {
+        clearTimeout(hideTimer);
+        tooltip.innerHTML = html;
+        positionTooltip(anchorEl);
+        tooltip.classList.add('visible');
+      }
+
+      function hideTooltip() {
+        hideTimer = setTimeout(() => tooltip.classList.remove('visible'), 80);
+      }
+
+      // Strip pseudo-class/pseudo-element blocks (&:before, &:after, &.x {...})
+      // so what remains are safe direct CSS properties for inline style use
+      function safeInlineStyle(css) {
+        return (css || '').replace(/&[^{]*\{[^}]*\}/g, '').replace(/\s+/g, ' ').trim();
+      }
+
+      const PREVIEW_SAMPLE = {
+        h1: '一级标题示例',
+        h2: '二级标题示例',
+        h3: '三级标题示例',
+        blockquote: '这是一段引用文字示例',
+        list: '列表项示例内容',
+        link: '链接文字示例',
+        image: '图片边框/圆角效果',
+        divider: null,
+        table: '表格样式示例',
+        inlineCode: '行内代码示例'
+      };
+
+      function buildChipTooltip(category, preset) {
+        const safeStyle = safeInlineStyle(preset.css);
+        const sample = PREVIEW_SAMPLE[category];
+        let content;
+        if (category === 'divider') {
+          content = \`<hr style="\${safeStyle}">\`;
+        } else {
+          content = \`<div style="\${safeStyle};margin:0;font-size:12px;line-height:1.6;">\${sample}</div>\`;
+        }
+        return \`<div class="tt-label">\${preset.name}</div>\${content}\`;
+      }
+
+      function buildThemeTooltip(preset) {
+        return \`
+          <div class="tt-label">\${preset.name}</div>
+          <div class="tt-theme-thumb" style="background:\${preset.preview.background}">
+            <div class="tt-thumb-title" style="color:\${preset.preview.accent}">标题文字 Aa</div>
+            <div class="tt-thumb-bar"   style="background:\${preset.preview.accent}"></div>
+            <div class="tt-thumb-body"  style="color:\${preset.preview.primary}">正文内容预览文字</div>
+          </div>
+        \`;
+      }
+
       // ── Render theme cards ──
       function renderThemePresets() {
         const strip = document.getElementById('preset-grid');
@@ -433,9 +548,14 @@ export class StylePanel {
           </div>
         \`).join('');
         strip.querySelectorAll('.theme-card').forEach(card => {
+          const preset = themePresets.find(p => p.id === card.dataset.id);
           card.addEventListener('click', () => {
             vscode.postMessage({ type: 'selectThemePreset', presetId: card.dataset.id });
           });
+          if (preset) {
+            card.addEventListener('mouseenter', () => showTooltip(card, buildThemeTooltip(preset)));
+            card.addEventListener('mouseleave', hideTooltip);
+          }
         });
       }
 
@@ -450,11 +570,16 @@ export class StylePanel {
           </div>
         \`).join('');
         container.querySelectorAll('.chip').forEach(chip => {
+          const preset = presetList.find(p => p.id === chip.dataset.id);
           chip.addEventListener('click', function() {
             container.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
             this.classList.add('active');
             vscode.postMessage({ type: 'setStylePreset', category: this.dataset.category, presetId: this.dataset.id });
           });
+          if (preset) {
+            chip.addEventListener('mouseenter', () => showTooltip(chip, buildChipTooltip(category, preset)));
+            chip.addEventListener('mouseleave', hideTooltip);
+          }
         });
       }
 
