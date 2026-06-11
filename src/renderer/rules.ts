@@ -22,8 +22,11 @@ export function applyWeChatRules(md: MarkdownIt, theme: Theme, mode: RenderMode 
   };
   r['heading_close'] = (tokens, idx) => `</${tokens[idx].tag}>\n`;
 
-  r['paragraph_open']  = () => `<p style="${theme.p}">`;
-  r['paragraph_close'] = () => `</p>\n`;
+  // In tight lists, markdown-it marks the item's paragraph tokens hidden and
+  // expects the renderer to emit no <p> wrapper — otherwise the block-level <p>
+  // pushes list-item content onto its own line, away from the marker prefix.
+  r['paragraph_open']  = (tokens, idx) => tokens[idx].hidden ? '' : `<p style="${theme.p}">`;
+  r['paragraph_close'] = (tokens, idx) => tokens[idx].hidden ? '' : `</p>\n`;
 
   r['code_inline'] = (tokens, idx) =>
     `<code style="${theme.inlineCode}">${escapeHtml(tokens[idx].content)}</code>`;
