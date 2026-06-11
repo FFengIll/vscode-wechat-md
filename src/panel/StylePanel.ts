@@ -17,7 +17,9 @@ const PREVIEW_MARKDOWN: Record<string, string> = {
   blockquote: '> 这是一段引用文字示例',
   list: '- 列表项示例一\n- 列表项示例二',
   link: '[链接文字示例](https://example.com)',
-  image: '![示例图片](data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="60"><rect width="120" height="60" fill="%23cccccc"/><text x="60" y="34" font-size="12" fill="%23666" text-anchor="middle">IMG</text></svg>)',
+  // base64 PNG (160x80 light-gray block) — survives HTML-escaping unlike an
+  // SVG data URI, and needs no network access.
+  image: '![示例图片](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAABQCAIAAAD8c8osAAAAOklEQVR4nO3BMQEAAADCoPVPbQ0PoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD4GxbgAAFY4P9aAAAAAElFTkSuQmCC)',
   divider: '上文\n\n---\n\n下文',
   table: '| 列一 | 列二 |\n| --- | --- |\n| 内容 | 内容 |',
   inlineCode: '这是 `行内代码` 示例'
@@ -39,7 +41,6 @@ export class StylePanel {
   // Dedicated renderer for live style previews. Kept separate from the main
   // preview renderer so applying a candidate preset doesn't pollute its state.
   private previewRenderer: WeChatRenderer | null = null;
-  private previewRendererReady = false;
 
   static createOrShow(
     extensionUri: vscode.Uri,
@@ -745,7 +746,6 @@ export class StylePanel {
       } catch {
         // Highlighter is optional; plain fallback is fine for previews.
       }
-      this.previewRendererReady = true;
     }
 
     // Reload theme (picks up active preset vars/accent), then apply ONLY the
