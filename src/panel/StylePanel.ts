@@ -4,7 +4,24 @@ import { PresetManager } from '../renderer/PresetManager';
 import { StylePresetManager } from '../renderer/StylePresetManager';
 import { getStylePresets, StylePresetCategory } from '../renderer/stylePresets';
 import type { ThemeVars } from '../renderer/theme';
+import { WeChatRenderer } from '../renderer';
 import { getNonce } from './PreviewPanel';
+
+// Small markdown snippets used to render a live preview of each style category.
+// The snippet is rendered through the real WeChatRenderer so the tooltip shows
+// exactly what the preset produces — including pseudo-element decorations.
+const PREVIEW_MARKDOWN: Record<string, string> = {
+  h1: '# 一级标题示例',
+  h2: '## 二级标题示例',
+  h3: '### 三级标题示例',
+  blockquote: '> 这是一段引用文字示例',
+  list: '- 列表项示例一\n- 列表项示例二',
+  link: '[链接文字示例](https://example.com)',
+  image: '![示例图片](data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="60"><rect width="120" height="60" fill="%23cccccc"/><text x="60" y="34" font-size="12" fill="%23666" text-anchor="middle">IMG</text></svg>)',
+  divider: '上文\n\n---\n\n下文',
+  table: '| 列一 | 列二 |\n| --- | --- |\n| 内容 | 内容 |',
+  inlineCode: '这是 `行内代码` 示例'
+};
 
 /**
  * Independent webview panel for style management
@@ -18,6 +35,11 @@ export class StylePanel {
   private readonly presetManager: PresetManager | null;
   private readonly stylePresetManager: StylePresetManager;
   private disposables: vscode.Disposable[] = [];
+
+  // Dedicated renderer for live style previews. Kept separate from the main
+  // preview renderer so applying a candidate preset doesn't pollute its state.
+  private previewRenderer: WeChatRenderer | null = null;
+  private previewRendererReady = false;
 
   static createOrShow(
     extensionUri: vscode.Uri,
@@ -76,7 +98,7 @@ export class StylePanel {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline' 'nonce-${nonce}';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src https: data:; script-src 'unsafe-inline' 'nonce-${nonce}';">
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -219,8 +241,8 @@ export class StylePanel {
     #preview-tooltip {
       position: fixed;
       z-index: 9999;
-      min-width: 160px;
-      max-width: 240px;
+      min-width: 200px;
+      max-width: 320px;
       padding: 10px 12px;
       background: var(--vscode-editorWidget-background, var(--vscode-editor-background));
       border: 1px solid var(--vscode-panelBorder);
@@ -255,12 +277,24 @@ export class StylePanel {
     .tt-thumb-title { font-size: 13px; font-weight: 700; line-height: 1.2; }
     .tt-thumb-bar   { height: 2px; border-radius: 1px; width: 55%; }
     .tt-thumb-body  { font-size: 10px; opacity: 0.75; }
-    .tt-hint {
-      margin-top: 6px;
+    .tt-loading {
       font-size: 10px;
       color: var(--vscode-descriptionForeground);
-      opacity: 0.85;
+      opacity: 0.75;
+      padding: 4px 0;
     }
+    /* Live-rendered preview gets a white canvas like the real WeChat preview */
+    .tt-preview-body {
+      background: #fff;
+      color: #333;
+      border-radius: 4px;
+      padding: 8px 10px;
+      max-height: 180px;
+      overflow: hidden;
+      font-size: 13px;
+    }
+    .tt-preview-body section { max-width: none !important; padding: 0 !important; }
+    .tt-preview-body img { max-width: 100%; }
     .theme-card-check {
       font-size: 12px;
       color: var(--vscode-list-activeSelectionForeground);
@@ -493,53 +527,26 @@ export class StylePanel {
         tooltip.classList.add('visible');
       }
 
+      function updateTooltipHtml(anchorEl, html) {
+        tooltip.innerHTML = html;
+        positionTooltip(anchorEl);
+      }
+
       function hideTooltip() {
         hideTimer = setTimeout(() => tooltip.classList.remove('visible'), 80);
       }
 
-      // Strip pseudo-class/pseudo-element blocks (&:before, &:after, &.x {...})
-      // so what remains are safe direct CSS properties for inline style use.
-      // Also resolve var(--wechat-accent) to the current theme accent color,
-      // since inline styles can't inherit the variable reliably in the tooltip.
-      function safeInlineStyle(css) {
-        return (css || '')
-          .replace(/&[^{]*\{[^}]*\}/g, '')
-          .replace(/var\(--wechat-accent\)/g, currentAccent)
-          .replace(/\s+/g, ' ')
-          .trim();
-      }
+      // ── Live style preview via real renderer ──
+      // Each hover requests a freshly-rendered HTML snippet from the host so the
+      // tooltip shows exactly what the preset produces (incl. pseudo-elements).
+      let previewReqId = 0;
+      let pendingAnchor = null;
 
-      const PREVIEW_SAMPLE = {
-        h1: '一级标题示例',
-        h2: '二级标题示例',
-        h3: '三级标题示例',
-        blockquote: '这是一段引用文字示例',
-        list: '列表项示例内容',
-        link: '链接文字示例',
-        image: '图片边框/圆角效果',
-        divider: null,
-        table: '表格样式示例',
-        inlineCode: '行内代码示例'
-      };
-
-      function buildChipTooltip(category, preset) {
-        const safeStyle = safeInlineStyle(preset.css);
-        const sample = PREVIEW_SAMPLE[category];
-        let content;
-        if (category === 'divider') {
-          content = \`<hr style="\${safeStyle}">\`;
-        } else {
-          content = \`<div style="\${safeStyle};margin:0;font-size:12px;line-height:1.6;">\${sample}</div>\`;
-        }
-        // Presets relying on ::before/::after pseudo-elements (arrows, numbered
-        // markers, quote marks, etc.) lose their decoration in inline preview —
-        // append the description as a textual hint so the effect isn't blank.
-        let hint = '';
-        const hasPseudo = /&[^{]*\{/.test(preset.css || '');
-        if (hasPseudo && preset.description) {
-          hint = \`<div class="tt-hint">\${preset.description}</div>\`;
-        }
-        return \`<div class="tt-label">\${preset.name}</div>\${content}\${hint}\`;
+      function requestStylePreview(anchorEl, category, preset) {
+        const reqId = ++previewReqId;
+        pendingAnchor = anchorEl;
+        showTooltip(anchorEl, \`<div class="tt-label">\${preset.name}</div><div class="tt-loading">渲染中…</div>\`);
+        vscode.postMessage({ type: 'previewStyle', category, presetId: preset.id, reqId });
       }
 
       function buildThemeTooltip(preset) {
@@ -598,7 +605,7 @@ export class StylePanel {
             vscode.postMessage({ type: 'setStylePreset', category: this.dataset.category, presetId: this.dataset.id });
           });
           if (preset) {
-            chip.addEventListener('mouseenter', () => showTooltip(chip, buildChipTooltip(category, preset)));
+            chip.addEventListener('mouseenter', () => requestStylePreview(chip, category, preset));
             chip.addEventListener('mouseleave', hideTooltip);
           }
         });
@@ -613,6 +620,16 @@ export class StylePanel {
             tooltip.style.setProperty('--wechat-accent', currentAccent);
           }
           renderThemePresets();
+        } else if (msg.type === 'stylePreviewHtml') {
+          // Ignore stale results from earlier hovers
+          if (msg.reqId === previewReqId && pendingAnchor) {
+            const body = msg.html
+              ? \`<div class="tt-preview-body">\${msg.html}</div>\`
+              : '<div class="tt-loading">无预览</div>';
+            const label = tooltip.querySelector('.tt-label');
+            const labelHtml = label ? label.outerHTML : '';
+            updateTooltipHtml(pendingAnchor, labelHtml + body);
+          }
         } else if (msg.type === 'updateStylePresets') {
           if (msg.category && msg.presets) renderStylePresets(msg.category, msg.presets);
         } else if (msg.type === 'updateAllStylePresets') {
@@ -682,7 +699,61 @@ export class StylePanel {
         vscode.commands.executeCommand('wechat-md.refreshPreview');
         vscode.window.showInformationMessage('样式已应用到预览');
         break;
+
+      case 'previewStyle':
+        await this.handlePreviewStyle(message);
+        break;
     }
+  }
+
+  /**
+   * Render a single candidate style preset against a small markdown snippet
+   * using a dedicated renderer, and post the resulting HTML back to the webview.
+   * The reqId lets the webview ignore stale results when hovering quickly.
+   */
+  private async handlePreviewStyle(message: any): Promise<void> {
+    const { category, presetId, reqId } = message;
+    if (!category || presetId === undefined) return;
+
+    const markdown = PREVIEW_MARKDOWN[category];
+    if (!markdown) return;
+
+    try {
+      const html = await this.renderStylePreview(category, presetId, markdown);
+      this.panel.webview.postMessage({ type: 'stylePreviewHtml', reqId, html });
+    } catch (error) {
+      console.error('Failed to render style preview:', error);
+      this.panel.webview.postMessage({ type: 'stylePreviewHtml', reqId, html: '' });
+    }
+  }
+
+  /**
+   * Lazily build the dedicated preview renderer, then render the snippet with
+   * only the requested preset applied for this category.
+   */
+  private async renderStylePreview(
+    category: string,
+    presetId: string,
+    markdown: string
+  ): Promise<string> {
+    if (!this.previewRenderer) {
+      this.previewRenderer = new WeChatRenderer();
+      this.previewRenderer.setPresetManager(this.presetManager);
+      this.previewRenderer.setStylePresetManager(this.stylePresetManager);
+      try {
+        await this.previewRenderer.initHighlighter();
+      } catch {
+        // Highlighter is optional; plain fallback is fine for previews.
+      }
+      this.previewRendererReady = true;
+    }
+
+    // Reload theme (picks up active preset vars/accent), then apply ONLY the
+    // single candidate preset for this category so the preview is isolated.
+    this.previewRenderer.reloadTheme(null);
+    this.previewRenderer.setStylePresetOverrides({ [category]: presetId });
+
+    return this.previewRenderer.render(markdown, 'preview');
   }
 
   private sendInitialData(): void {
