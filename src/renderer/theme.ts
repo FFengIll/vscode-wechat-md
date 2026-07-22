@@ -181,7 +181,10 @@ export function buildTheme(v: ThemeVars, customCSS?: Record<string, string>) {
 
     ul: ['padding-left: 24px', 'margin: 0.8em 0', 'list-style-type: disc'].join('; '),
     ol: ['padding-left: 24px', 'margin: 0.8em 0', 'list-style-type: decimal'].join('; '),
-    li: [`line-height: ${v.lineHeight}`, 'margin: 0.3em 0', `color: ${v.textColor}`].join('; '),
+    // font-size must be explicit: tight lists emit <li>text</li> (no <p>),
+    // loose/nested lists emit <li><p>..</p></li>. Without a fixed size the <li>
+    // inherits whatever ancestor wins, so items in one list render at different sizes.
+    li: [`font-size: ${v.fontSize}`, `line-height: ${v.lineHeight}`, 'margin: 0.3em 0', `color: ${v.textColor}`].join('; '),
 
     hr:  ['border: none', 'border-top: 1px solid #eee', 'margin: 2em 0'].join('; '),
     a:   [`color: ${v.accent}`, 'text-decoration: none'].join('; '),
