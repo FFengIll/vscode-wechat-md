@@ -2,7 +2,7 @@
   "name": "vscode-wechat-md",
   "displayName": "wechat-md",
   "description": "微信公众号markdown渲染器，本地预览，一键复制，精确适配，快速发布",
-  "version": "0.260611.0",
+  "version": "0.260722.0",
   "engines": {
     "vscode": "^1.100.0"
   },
@@ -73,21 +73,21 @@
   "devDependencies": {
     "@types/markdown-it": "^14.1.2",
     "@types/mocha": "^10.0.10",
-    "@types/node": "22.x",
+    "@types/node": "~22.20.1",
     "@types/vscode": "^1.100.0",
-    "@typescript-eslint/eslint-plugin": "^8.45.0",
-    "@typescript-eslint/parser": "^8.45.0",
+    "@typescript-eslint/eslint-plugin": "^8.65.0",
+    "@typescript-eslint/parser": "^8.65.0",
     "@vscode/test-cli": "^0.0.11",
     "@vscode/test-electron": "^2.5.2",
-    "esbuild": "^0.28.0",
-    "eslint": "^9.36.0",
+    "esbuild": "^0.28.1",
+    "eslint": "^9.39.5",
     "npm-run-all2": "^8.0.4",
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@shikijs/markdown-it": "^4.0.2",
-    "@shikijs/transformers": "^4.0.2",
-    "markdown-it": "^14.1.1",
-    "shiki": "^4.0.2"
+    "@shikijs/markdown-it": "^4.3.1",
+    "@shikijs/transformers": "^4.3.1",
+    "markdown-it": "^14.3.0",
+    "shiki": "^4.3.1"
   }
 }
