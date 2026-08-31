@@ -340,13 +340,13 @@ export class WeChatRenderer {
       const accent = getAccent();
 
       if (isPreset(presetId, 'hr-text')) {
-        r['hr'] = () => `<div style="border: none; text-align: center; margin: 24px 0;"><span style="color: #ccc; letter-spacing: 4px;">● ● ●</span></div>`;
+        r['hr'] = () => `<section style="border: none; text-align: center; margin: 24px 0;"><span style="color: #ccc; letter-spacing: 4px;">● ● ●</span></section>`;
       } else if (isPreset(presetId, 'hr-center-star')) {
-        r['hr'] = () => `<div style="border: none; overflow: hidden; text-align: center; margin: 24px 0; position: relative;"><span style="display: inline-block; padding: 0 10px; color: ${accent}; font-size: 20px; position: relative; z-index: 1;">★</span><span style="position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: #ddd; z-index: 0;"></span></div>`;
+        r['hr'] = () => `<section style="border: none; overflow: hidden; text-align: center; margin: 24px 0; position: relative;"><span style="display: inline-block; padding: 0 10px; color: ${accent}; font-size: 20px; position: relative; z-index: 1;">★</span><span style="position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: #ddd; z-index: 0;"></span></section>`;
       } else if (isPreset(presetId, 'hr-arrow')) {
-        r['hr'] = () => `<div style="border: none; text-align: center; margin: 24px 0;"><span style="color: ${accent}; letter-spacing: 8px; font-size: 12px;">↓↓↓</span></div>`;
+        r['hr'] = () => `<section style="border: none; text-align: center; margin: 24px 0;"><span style="color: ${accent}; letter-spacing: 8px; font-size: 12px;">↓↓↓</span></section>`;
       } else if (isPreset(presetId, 'hr-space')) {
-        r['hr'] = () => `<div style="border: none; height: 32px; margin: 24px 0;"></div>`;
+        r['hr'] = () => `<section style="border: none; height: 32px; margin: 24px 0;"></section>`;
       } else {
         const css = getCSS('divider', presetId);
         r['hr'] = () => `<hr style="${css}">`;
