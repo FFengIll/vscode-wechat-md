@@ -15,7 +15,9 @@ pnpm run lint                      # eslint src
 pnpm run watch                     # esbuild + tsc, both in watch mode
 pnpm run compile                   # check-types + esbuild (dev build)
 pnpm run package                   # check-types + esbuild --production
-pnpm test                          # compile-tests + lint + vscode-test (src/test/*.test.ts)
+pnpm test                          # compile-tests + lint + vscode-test (src/test/*.test.ts) — needs a downloaded VS Code/Electron host
+pnpm run test:harness              # headless renderer validation (test/**) — no VS Code needed, see below
+pnpm run render <file.md>          # render a markdown file to a standalone HTML page for a visual check, no VS Code
 ```
 
 Packaging/publishing with `vsce` must pass `--no-dependencies`, otherwise it tries to `npm install` over the pnpm-managed `node_modules` and corrupts it:
@@ -24,6 +26,10 @@ Packaging/publishing with `vsce` must pass `--no-dependencies`, otherwise it tri
 npx @vscode/vsce package --no-dependencies
 npx @vscode/vsce publish --no-dependencies
 ```
+
+## Validating a renderer change without VS Code
+
+Prefer `pnpm run test:harness` over manually opening the preview panel and eyeballing it. `WeChatRenderer` and everything it calls into (`rules.ts`, `wechatTransformer.ts`, `theme.ts`, `stylePresets.ts`, `customStyles.ts`, `frontMatter.ts`) has no `vscode` import, so `test/harness/render.ts` drives it directly through Node — see `test/harness/README.md` for the full layout. In particular `test/harness/stylePresets.test.ts` sweeps every built-in preset in every category and asserts WeChat-paste compatibility (no `<style>`/`class`, every element inline-styled, balanced tags), so a new or edited style preset in `src/renderer/index.ts`'s `_applyStylePresetOverrides()` is covered automatically without writing a new test. When in doubt whether a change is visually right, `pnpm run render <fixture> --mode=copy` and open the resulting HTML file in a browser.
 
 ## Architecture
 

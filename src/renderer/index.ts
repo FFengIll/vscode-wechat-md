@@ -260,7 +260,7 @@ export class WeChatRenderer {
             return `<h2 style="display: flex; align-items: center;"><span style="color: ${accent}; margin-right: 8px; font-size: 0.8em;">▶</span>`;
           } else if (isPreset(h2Preset, 'h2-number')) {
             h2Counter++;
-            return `<h2><span style="color: ${accent}; font-weight: bold; margin-right: 6px;">${h2Counter}.</span>`;
+            return `<h2 style="display: flex; align-items: center;"><span style="color: ${accent}; font-weight: bold; margin-right: 6px;">${h2Counter}.</span>`;
           } else if (isPreset(h2Preset, 'h2-bracket')) {
             h2CloseHandler = (tokens: any, idx: number) => {
               if (tokens[idx].tag === 'h2') {
@@ -281,7 +281,7 @@ export class WeChatRenderer {
             return `<h3 style="display: flex; align-items: center;"><span style="color: ${accent}; margin-right: 8px; font-size: 0.6em;">●</span>`;
           } else if (isPreset(h3Preset, 'h3-number')) {
             h3Counter++;
-            return `<h3><span style="color: ${accent}; font-weight: bold;">${h3Counter}.</span> `;
+            return `<h3 style="display: flex; align-items: center;"><span style="color: ${accent}; font-weight: bold;">${h3Counter}.</span> `;
           } else if (isPreset(h3Preset, 'h3-brace')) {
             h3CloseHandler = (tokens: any, idx: number) => {
               if (tokens[idx].tag === 'h3') {

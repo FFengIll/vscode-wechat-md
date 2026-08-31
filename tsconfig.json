@@ -15,5 +15,8 @@
 		// "noImplicitReturns": true, /* Report error when not all code paths in function return a value. */
 		// "noFallthroughCasesInSwitch": true, /* Report errors for fallthrough cases in switch statement. */
 		// "noUnusedParameters": true,  /* Report errors on unused parameters. */
-	}
+	},
+	// test/ and scripts/ have their own tsconfig (test/tsconfig.json) — vitest and
+	// tsx type-check/transpile them independently of this rootDir: "src" build.
+	"include": ["src"]
 }
