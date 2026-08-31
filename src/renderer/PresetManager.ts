@@ -42,6 +42,7 @@ export class PresetManager {
     this.registry.set('tech', presets.techPreset);
     this.registry.set('claude', presets.claudePreset);
     this.registry.set('pikachu', presets.pikachuPreset);
+    this.registry.set('corporate-blue', presets.corporateBluePreset);
   }
 
   /**

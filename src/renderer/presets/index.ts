@@ -6,3 +6,4 @@ export { minimalPreset } from './minimal';
 export { techPreset } from './tech';
 export { claudePreset } from './claude';
 export { pikachuPreset } from './pikachu';
+export { corporateBluePreset } from './corporateBlue';
