@@ -3,10 +3,21 @@ import { buildTheme, loadThemeVars, Theme } from './theme';
 import { applyWeChatRules, RenderMode } from './rules';
 import { PresetManager } from './PresetManager';
 import { isCustomPresetId, StylePresetCategory } from './stylePresets';
+import { transformToWeChatFormat, normalizeLang as wxNormalizeLang } from './wechatTransformer';
 
 // Shiki transformer: adds data-line-number to each line span and wraps the
 // pre block with a card div + language label for the preview panel.
-function lineNumberTransformer() {
+// `state` is a mutable object owned by the WeChatRenderer instance — the
+// transformer config is baked into the shiki plugin once at initHighlighter()
+// time, but its hooks run on every render, so later mutations to the same
+// object (e.g. picking a different codeBlock preset) are picked up on the
+// very next render without having to rebuild the shiki plugin.
+interface CodeBlockPreviewState {
+  css: string;
+  decoration: 'none' | 'mac-window' | 'card';
+}
+
+function lineNumberTransformer(state: CodeBlockPreviewState) {
   return {
     name: 'wechat-md:line-numbers',
     line(node: { properties: Record<string, unknown> }, line: number) {
@@ -18,6 +29,36 @@ function lineNumberTransformer() {
       node.properties['class'] = ((node.properties['class'] as string) || '') + ' wmd-code-block';
       if (lang) {
         node.properties['data-lang-label'] = lang;
+      }
+
+      // Layer the selected codeBlock preset's CSS on top of Shiki's own
+      // inline style (a plain string in this hast shape — verified against
+      // the pinned @shikijs/markdown-it version).
+      if (state.css) {
+        const existing = (node.properties['style'] as string) || '';
+        node.properties['style'] = existing ? `${existing}; ${state.css}` : state.css;
+      }
+
+      // Structural decorations that need real sibling elements, not CSS.
+      if (state.decoration === 'mac-window') {
+        node.children.unshift({
+          type: 'element',
+          tagName: 'div',
+          properties: { style: 'display: flex; gap: 6px; padding: 10px 12px; background: #e6e6e6;' },
+          children: ['#ff5f56', '#ffbd2e', '#27c93f'].map(color => ({
+            type: 'element',
+            tagName: 'span',
+            properties: { style: `display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: ${color};` },
+            children: [],
+          })),
+        } as any);
+      } else if (state.decoration === 'card' && lang) {
+        node.children.unshift({
+          type: 'element',
+          tagName: 'div',
+          properties: { style: 'position: absolute; top: 8px; right: 12px; font-size: 12px; color: #999;' },
+          children: [{ type: 'text', value: lang }],
+        } as any);
       }
     },
   };
@@ -37,6 +78,7 @@ const CATEGORY_THEME_KEY: Partial<Record<string, keyof Theme>> = {
   image: 'img',
   divider: 'hr',
   inlineCode: 'inlineCode',
+  codeBlock: 'pre',
 };
 
 export class WeChatRenderer {
@@ -50,6 +92,10 @@ export class WeChatRenderer {
   private _stylePresetOverrides: Record<string, string> = {}; // Preset IDs for each category
   private _stylePresetManager: any = null; // Reference to StylePresetManager for getting CSS
   private _customStyleCSS: Partial<Record<StylePresetCategory, string>> = {}; // User-authored CSS per category (from .wechat/custom/<category>.css)
+  // Shared mutable object read by the shiki transformer on every render — see
+  // lineNumberTransformer() for why mutating it is enough to pick up a newly
+  // selected codeBlock preset without rebuilding the shiki plugin.
+  private _codeBlockPreviewState: CodeBlockPreviewState = { css: '', decoration: 'none' };
 
   constructor() {
     this.mdPreview = new MarkdownIt({ html: true, linkify: true, typographer: true });
@@ -63,7 +109,7 @@ export class WeChatRenderer {
     const { default: shikiPlugin } = await import('@shikijs/markdown-it');
     this._shikiPlugin = await shikiPlugin({
       theme: 'github-light',
-      transformers: [lineNumberTransformer()],
+      transformers: [lineNumberTransformer(this._codeBlockPreviewState)],
     });
     this.mdPreview.use(this._shikiPlugin);
   }
@@ -272,12 +318,28 @@ export class WeChatRenderer {
     if (overrides.blockquote && overrides.blockquote !== 'quote-default') {
       const presetId = overrides.blockquote;
       const accent = getAccent();
+      let blockquoteCloseHandler: (() => string) | null = null;
 
       if (isPreset(presetId, 'quote-quote-mark')) {
         r['blockquote_open'] = () => `<blockquote style="position: relative; padding: 16px 16px 16px 48px; margin: 16px 0; background: #f9f9f9; border-radius: 8px;"><span style="position: absolute; left: 12px; top: 8px; font-size: 32px; color: ${accent}; opacity: 0.3; font-family: Georgia;">"</span>`;
+      } else if (isPreset(presetId, 'quote-card-dots')) {
+        // Layered "shadow card" look: a dot pendant hanging off the top edge,
+        // an accent-colored outer box, and a white inner box offset via
+        // transform so the accent color peeks out as a bottom-right shadow.
+        r['blockquote_open'] = () =>
+          `<section style="position: relative; margin: 20px 4px 24px;">` +
+          `<span style="position: absolute; top: -8px; left: 20px; width: 14px; height: 14px; border-radius: 50%; background: ${accent}; box-shadow: 0 2px 4px rgba(0,0,0,0.15); z-index: 2;"></span>` +
+          `<section style="background: ${accent}; border-radius: 10px; padding: 3px;">` +
+          `<section style="background: #fff; border: 1px solid ${accent}; border-radius: 8px; padding: 16px 18px; transform: translate(-4px, -4px);">` +
+          `<blockquote style="margin: 0; border: none; padding: 0; background: none; color: #333; font-style: normal;">`;
+        blockquoteCloseHandler = () => `</blockquote></section></section></section>\n`;
       } else {
         const css = getCSS('blockquote', presetId);
         r['blockquote_open'] = () => `<blockquote style="${css}">`;
+      }
+
+      if (blockquoteCloseHandler) {
+        r['blockquote_close'] = blockquoteCloseHandler;
       }
     }
 
@@ -391,6 +453,65 @@ export class WeChatRenderer {
     }
 
     // ============================================================================
+    // CODE BLOCK STYLES
+    // ============================================================================
+    // Reset preview state each pass so switching back to codeBlock-default
+    // (or away from a structural preset) clears any previously-applied CSS
+    // or decoration instead of leaving it stuck from a prior selection.
+    this._codeBlockPreviewState.css = '';
+    this._codeBlockPreviewState.decoration = 'none';
+
+    // Copy-mode code_block/fence rules are built here but assigned directly
+    // onto rCopy further down (see COPY RENDERER section) — NOT onto `r`
+    // (mdPreview's rules), because mdPreview's fence rule is owned by the
+    // Shiki plugin (registered via mdPreview.use() in reloadTheme()) and
+    // must keep producing syntax-highlighted <pre> markup for the preview
+    // panel. Preview-mode decoration instead flows through
+    // `_codeBlockPreviewState`, read by lineNumberTransformer() on every render.
+    let codeBlockCopyBlock: ((tokens: any, idx: number) => string) | null = null;
+    let codeBlockCopyFence: ((tokens: any, idx: number) => string) | null = null;
+
+    if (overrides.codeBlock && overrides.codeBlock !== 'codeBlock-default') {
+      const presetId = overrides.codeBlock;
+
+      if (isPreset(presetId, 'codeBlock-mac-window')) {
+        const wrapperStyle = 'border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);';
+        this._codeBlockPreviewState.css = wrapperStyle;
+        this._codeBlockPreviewState.decoration = 'mac-window';
+
+        const dots = ['#ff5f56', '#ffbd2e', '#27c93f']
+          .map(color => `<span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: ${color}; margin-right: 6px;"></span>`)
+          .join('');
+        const labelHtml = `<code><span leaf=""><span style="display: block; padding: 4px 0 10px;">${dots}</span></span></code>`;
+        codeBlockCopyBlock = (tokens: any, idx: number) => transformToWeChatFormat('', tokens[idx].content, '', { wrapperStyle, labelHtml });
+        codeBlockCopyFence = (tokens: any, idx: number) => {
+          const lang = wxNormalizeLang(tokens[idx].info.trim());
+          return transformToWeChatFormat('', tokens[idx].content, lang, { wrapperStyle, labelHtml });
+        };
+      } else if (isPreset(presetId, 'codeBlock-card')) {
+        const wrapperStyle = 'border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); border: 1px solid #eee;';
+        this._codeBlockPreviewState.css = `position: relative; ${wrapperStyle}`;
+        this._codeBlockPreviewState.decoration = 'card';
+
+        codeBlockCopyBlock = (tokens: any, idx: number) => transformToWeChatFormat('', tokens[idx].content, '', { wrapperStyle });
+        codeBlockCopyFence = (tokens: any, idx: number) => {
+          const lang = wxNormalizeLang(tokens[idx].info.trim());
+          const labelHtml = lang ? `<code><span leaf=""><span style="display: block; text-align: right; font-size: 12px; color: #999; padding-bottom: 6px;">${this._escapeHtml(lang)}</span></span></code>` : '';
+          return transformToWeChatFormat('', tokens[idx].content, lang, { wrapperStyle, labelHtml });
+        };
+      } else {
+        const wrapperStyle = getCSS('codeBlock', presetId);
+        this._codeBlockPreviewState.css = wrapperStyle;
+
+        codeBlockCopyBlock = (tokens: any, idx: number) => transformToWeChatFormat('', tokens[idx].content, '', { wrapperStyle });
+        codeBlockCopyFence = (tokens: any, idx: number) => {
+          const lang = wxNormalizeLang(tokens[idx].info.trim());
+          return transformToWeChatFormat('', tokens[idx].content, lang, { wrapperStyle });
+        };
+      }
+    }
+
+    // ============================================================================
     // TABLE STYLES
     // ============================================================================
     if (overrides.table && overrides.table !== 'table-default') {
@@ -456,6 +577,9 @@ export class WeChatRenderer {
     }
     if (overrides.blockquote) {
       rCopy['blockquote_open'] = r['blockquote_open'];
+      if (isPreset(overrides.blockquote, 'quote-card-dots')) {
+        rCopy['blockquote_close'] = r['blockquote_close'];
+      }
     }
     if (overrides.list) {
       rCopy['bullet_list_open'] = r['bullet_list_open'];
@@ -480,6 +604,10 @@ export class WeChatRenderer {
       rCopy['table_open'] = r['table_open'];
       rCopy['th_open'] = r['th_open'];
       rCopy['td_open'] = r['td_open'];
+    }
+    if (overrides.codeBlock && codeBlockCopyBlock && codeBlockCopyFence) {
+      rCopy['code_block'] = codeBlockCopyBlock;
+      rCopy['fence'] = codeBlockCopyFence;
     }
   }
 

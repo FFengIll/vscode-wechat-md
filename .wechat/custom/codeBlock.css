@@ -1,0 +1,21 @@
+/**
+ * 自定义「codeBlock」样式
+ *
+ * 写一条正常的 CSS 规则（选择器仅供参考，实际渲染时只会取花括号里的声明，
+ * 套到该类目的默认 HTML 结构上，作为 style="..." 属性内容）。
+ *
+ * 只有在样式面板里把「代码块」的预设选为「自定义」时，这份样式才会生效。
+ * 支持 var(--wechat-accent) 等主题色变量，会自动替换成当前主题的实际颜色。
+ *
+ * 手机端阅读文章时无法像网页一样横向滚动查看溢出的长代码行，
+ * overflow-x: auto 在微信文章里基本不起作用；这里改用 white-space: pre-wrap
+ * 搭配 word-break: break-all 让长行自动换行——虽然会打乱代码的原始排版，
+ * 但能保证读者在手机上不会看到被截断、读不到的内容。
+ */
+
+.wmd-pre, pre {
+  border-radius: 8px;
+  border: 1px solid var(--wechat-accent);
+  white-space: pre-wrap;
+  word-break: break-all;
+}

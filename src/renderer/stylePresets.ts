@@ -343,6 +343,17 @@ export const blockquoteStyles: StylePreset[] = [
     css: 'background: #f0f0f0; border-left: 4px solid var(--wechat-accent); padding: 12px 16px; margin: 16px 0; border-radius: 0 6px 6px 0;'
   },
   {
+    id: 'quote-card-dots',
+    name: '装饰卡片',
+    description: '圆点吊坠+双层立体卡片',
+    // Documentation only — this preset needs an outer decorative wrapper
+    // (dot pendant + two nested boxes) that a flat style="" can't express,
+    // so the real markup is hardcoded in index.ts's blockquote_open/close.
+    css: 'position: relative; margin: 20px 4px;' +
+          '&:before { content: ""; position: absolute; top: -8px; left: 20px; width: 14px; height: 14px; border-radius: 50%; background: var(--wechat-accent); }' +
+          '&:after { content: ""; position: absolute; inset: 0; background: var(--wechat-accent); border-radius: 10px; }'
+  },
+  {
     id: 'quote-custom',
     name: '自定义',
     description: '使用你自己编写的样式',
@@ -800,6 +811,55 @@ export const inlineCodeStyles: StylePreset[] = [
 ];
 
 // ============================================================================
+// CODE BLOCK STYLES
+// ============================================================================
+
+export const codeBlockStyles: StylePreset[] = [
+  {
+    id: 'codeBlock-default',
+    name: '默认',
+    description: '简洁默认样式',
+    css: ''
+  },
+  {
+    id: 'codeBlock-card',
+    name: '卡片标签',
+    description: '圆角卡片+语言标签',
+    // Documentation only — the language-label chip is injected as a real
+    // hast element into the Shiki-generated <pre> (preview) / as labelHtml
+    // in the WeChat copy-mode structure (copy), not via this css string.
+    css: 'border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); border: 1px solid #eee;' +
+          '&:before { content: attr(data-lang-label); position: absolute; top: 8px; right: 12px; font-size: 12px; color: #999; }'
+  },
+  {
+    id: 'codeBlock-mac-window',
+    name: 'Mac 窗口',
+    description: '仿 macOS 标题栏三色圆点',
+    // Documentation only — the titlebar + 3 dots are injected as real hast
+    // elements / HTML, not achievable via a flat style="".
+    css: 'border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);'
+  },
+  {
+    id: 'codeBlock-accent-border',
+    name: '主题边框',
+    description: '主题色描边',
+    css: 'border: 2px solid var(--wechat-accent); border-radius: 8px;'
+  },
+  {
+    id: 'codeBlock-minimal',
+    name: '简约',
+    description: '仅左侧竖线',
+    css: 'background: transparent; border: none; border-left: 4px solid var(--wechat-accent); border-radius: 0; padding-left: 20px; box-shadow: none;'
+  },
+  {
+    id: 'codeBlock-custom',
+    name: '自定义',
+    description: '使用你自己编写的样式',
+    css: ''
+  }
+];
+
+// ============================================================================
 // EXPORT ALL
 // ============================================================================
 
@@ -813,7 +873,8 @@ export const allStylePresets = {
   image: imageStyles,
   divider: dividerStyles,
   table: tableStyles,
-  inlineCode: inlineCodeStyles
+  inlineCode: inlineCodeStyles,
+  codeBlock: codeBlockStyles
 };
 
 export type StylePresetCategory = keyof typeof allStylePresets;
@@ -844,7 +905,8 @@ const CUSTOM_PRESET_IDS: Record<StylePresetCategory, string> = {
   image: 'img-custom',
   divider: 'hr-custom',
   table: 'table-custom',
-  inlineCode: 'inline-code-custom'
+  inlineCode: 'inline-code-custom',
+  codeBlock: 'codeBlock-custom'
 };
 
 export function getCustomPresetId(category: StylePresetCategory): string {
@@ -873,7 +935,8 @@ const CATEGORY_SELECTORS: Record<StylePresetCategory, string> = {
   image: '.wmd-img, img',
   divider: '.wmd-hr, hr',
   table: '.wmd-table, table',
-  inlineCode: '.wmd-code, code'
+  inlineCode: '.wmd-code, code',
+  codeBlock: '.wmd-pre, pre'
 };
 
 export function getCategorySelector(category: StylePresetCategory): string {

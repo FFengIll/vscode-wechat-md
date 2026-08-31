@@ -127,7 +127,12 @@ function transformLine(line: Line): string {
  * @param lang - Language identifier
  * @returns WeChat-compatible HTML string
  */
-export function transformToWeChatFormat(html: string, code: string, lang: string): string {
+export function transformToWeChatFormat(
+  html: string,
+  code: string,
+  lang: string,
+  opts?: { wrapperStyle?: string; labelHtml?: string }
+): string {
   // Split code into lines
   const lines = code.replace(/\n$/, '').split('\n');
 
@@ -141,7 +146,10 @@ export function transformToWeChatFormat(html: string, code: string, lang: string
     return `<code><span leaf="">${escapeHtml(line)}</span></code>`;
   }).join('');
 
-  return `<section class="code-snippet__js"><pre class="code-snippet__js code-snippet code-snippet_nowrap" data-lang="${escapeHtml(lang)}">${codeLines}</pre></section>\n`;
+  const styleAttr = opts?.wrapperStyle ? ` style="${escapeHtml(opts.wrapperStyle)}"` : '';
+  const label = opts?.labelHtml ?? '';
+
+  return `<section class="code-snippet__js"><pre class="code-snippet__js code-snippet code-snippet_nowrap"${styleAttr} data-lang="${escapeHtml(lang)}">${label}${codeLines}</pre></section>\n`;
 }
 
 /**

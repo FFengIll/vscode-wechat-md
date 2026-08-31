@@ -19,6 +19,7 @@ export interface SelectedPresets {
   divider?: string;
   table?: string;
   inlineCode?: string;
+  codeBlock?: string;
 }
 
 /**

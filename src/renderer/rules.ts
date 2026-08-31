@@ -33,15 +33,14 @@ export function applyWeChatRules(md: MarkdownIt, theme: Theme, mode: RenderMode 
 
   if (mode === 'copy') {
     r['code_block'] = (tokens, idx) => {
-      const lang = '';
       const content = tokens[idx].content;
-      return transformToWeChatFormat('', content, lang);
+      return transformToWeChatFormat('', content, '', { wrapperStyle: theme.pre });
     };
 
     r['fence'] = (tokens, idx) => {
       const lang = wechatNormalizeLang(tokens[idx].info.trim());
       const content = tokens[idx].content;
-      return transformToWeChatFormat('', content, lang);
+      return transformToWeChatFormat('', content, lang, { wrapperStyle: theme.pre });
     };
   } else {
     // preview mode: fence is handled by @shikijs/markdown-it plugin applied in index.ts

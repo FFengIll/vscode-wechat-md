@@ -23,7 +23,8 @@ const PREVIEW_MARKDOWN: Record<string, string> = {
   image: '![示例图片](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAABQCAIAAAD8c8osAAAAOklEQVR4nO3BMQEAAADCoPVPbQ0PoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD4GxbgAAFY4P9aAAAAAElFTkSuQmCC)',
   divider: '上文\n\n---\n\n下文',
   table: '| 列一 | 列二 |\n| --- | --- |\n| 内容 | 内容 |',
-  inlineCode: '这是 `行内代码` 示例'
+  inlineCode: '这是 `行内代码` 示例',
+  codeBlock: '```js\nconst hello = () => "world";\n```'
 };
 
 /**
@@ -483,6 +484,9 @@ export class StylePanel {
       <div class="group-label">行内代码样式</div>
       <div class="chip-grid" id="inlineCode-presets"></div>
       <a class="edit-custom-link" data-category="inlineCode">编辑自定义样式</a>
+      <div class="group-label">代码块样式</div>
+      <div class="chip-grid" id="codeBlock-presets"></div>
+      <a class="edit-custom-link" data-category="codeBlock">编辑自定义样式</a>
     </div>
   </div>
 
