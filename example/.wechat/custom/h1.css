@@ -6,11 +6,16 @@
  *
  * 只有在样式面板里把「h1」的预设选为「自定义」时，这份样式才会生效。
  * 支持 var(--wechat-accent) 等主题色变量，会自动替换成当前主题的实际颜色。
+ *
+ * h1 默认是撑满容器的 block 元素，直接加 border-bottom 会是一条通栏长线。
+ * 这里用 display: table + margin: auto 让 h1 的宽度收缩到刚好包住标题文字，
+ * 这样下划线（border-bottom）也只有标题文字那么长，并且整体居中。
  */
 
 .wmd-h1, h1 {
+  display: table;
+  margin: 1.8em auto 1em;
   text-align: center;
   border-bottom: 4px solid var(--wechat-accent);
   padding-bottom: 12px;
-  margin: 1.8em 0 1em;
 }
