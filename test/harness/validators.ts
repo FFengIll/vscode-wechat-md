@@ -54,6 +54,30 @@ export function validateWeChatHtml(html: string): ValidationIssue[] {
       if (STYLED_ELEMENTS.has(name) && !attribs.style) {
         issues.push({ rule: 'missing-inline-style', detail: `<${name}> has no style="" attribute` });
       }
+      // HTML has no escape for a literal `"` inside a double-quoted attribute
+      // value — a font-family like `"PingFang SC"` embedded straight into
+      // style="..." silently ends the attribute at that first quote, per the
+      // HTML5 tokenizer spec (real browsers do this too, not just this
+      // parser — confirmed empirically). Everything after is dropped and
+      // reinterpreted as bogus attributes. The signature is a style value
+      // that ends mid-declaration, right after a bare "property:" with no
+      // value — this caught exactly that bug in theme.ts's container and
+      // inlineCode styles (their font-family list was first in the array,
+      // so it silently ate color/background/font-size for every element
+      // using it). Fix: use single quotes for the nested font name instead.
+      if (attribs.style && /[a-zA-Z-]\s*:\s*$/.test(attribs.style)) {
+        issues.push({ rule: 'truncated-style-attr', detail: `<${name} style="${attribs.style}"> looks cut off mid-declaration — likely a literal '"' embedded in the style value (e.g. a double-quoted font-family name) that closed the HTML attribute early` });
+      }
+      // WeChat's own editor applies a default gray background to bare <code>
+      // tags — omitting `background` doesn't mean "no background", it means
+      // "whatever WeChat's default is". Any inline-styled <code> (i.e. not
+      // the WeChat code-block structure's own <code>, which has no style="",
+      // see STYLED_ELEMENTS) must declare it explicitly, even as `none`/
+      // `transparent`. Caught a real bug in inline-code-border/-minimal
+      // presets and the base theme — see theme.ts's inlineCode comment.
+      if (name === 'code' && attribs.style && !/background/i.test(attribs.style)) {
+        issues.push({ rule: 'code-missing-explicit-background', detail: `<code style="${attribs.style}"> has no background declaration — WeChat's default gray background will show through` });
+      }
       if (!VOID_ELEMENTS.has(name)) {
         stack.push(name);
       }

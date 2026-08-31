@@ -1,10 +1,10 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`WeChatRenderer — comprehensive fixture > renders copy-mode HTML that is WeChat-compatible 1`] = `
-"<section style="font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", sans-serif; max-width: 680px; margin: 0 auto; padding: 0 16px; color: #333; font-size: 16px; line-height: 1.8">
+"<section style="font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', 'Hiragino Sans GB', sans-serif; max-width: 680px; margin: 0 auto; padding: 0 16px; color: #333; font-size: 16px; line-height: 1.8">
 <p style="font-size: 16px; line-height: 1.8; color: #333; margin: 0.8em 0">深入理解渲染管线</p>
 <h1 style="font-size: 24px; font-weight: bold; color: #1a1a1a; margin: 1.6em 0 0.8em; line-height: 1.4; background: transparent; padding: 0; border-radius: 0">一级标题</h1>
-<p style="font-size: 16px; line-height: 1.8; color: #333; margin: 0.8em 0">正文段落，包含<strong style="font-weight: bold; color: #1a1a1a">粗体</strong>、<em style="font-style: italic; color: #555">斜体</em>和 <code style="font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; font-size: 14px; color: #d63384">行内代码</code>，以及一个<a href="https://example.com" style="color: #07C160; text-decoration: none">链接</a>。</p>
+<p style="font-size: 16px; line-height: 1.8; color: #333; margin: 0.8em 0">正文段落，包含<strong style="font-weight: bold; color: #1a1a1a">粗体</strong>、<em style="font-style: italic; color: #555">斜体</em>和 <code style="font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace; font-size: 14px; color: #d63384; background: none">行内代码</code>，以及一个<a href="https://example.com" style="color: #07C160; text-decoration: none">链接</a>。</p>
 <h2 style="font-size: 20px; font-weight: bold; color: #1a1a1a; margin: 1.4em 0 0.7em; line-height: 1.4; background: transparent; padding: 0; border-radius: 0">二级标题</h2>
 <blockquote style="border-left: 4px solid #07C160; padding: 10px 16px; background-color: #f9f9f9; color: #666; margin: 1em 0; font-style: italic"><p style="font-size: 16px; line-height: 1.8; color: #333; margin: 0.8em 0">这是一段引用文字，用于验证 blockquote 的渲染。</p>
 </blockquote>
