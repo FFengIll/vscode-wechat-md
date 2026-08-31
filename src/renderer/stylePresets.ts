@@ -745,8 +745,14 @@ export const inlineCodeStyles: StylePreset[] = [
   {
     id: 'inline-code-default',
     name: '默认',
-    description: '灰色背景',
-    css: 'background-color: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-size: 14px;'
+    description: '无背景',
+    css: ''
+  },
+  {
+    id: 'inline-code-gray',
+    name: '灰色背景',
+    description: '浅灰背景',
+    css: 'font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; background-color: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-size: 14px; color: var(--wechat-inline-code-color);'
   },
   {
     id: 'inline-code-accent',

@@ -165,7 +165,6 @@ export function buildTheme(v: ThemeVars, customCSS?: Record<string, string>) {
 
     inlineCode: [
       'font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace',
-      'background-color: #f4f4f4', 'padding: 2px 6px', 'border-radius: 3px',
       'font-size: 14px', `color: ${v.inlineCodeColor}`,
     ].join('; '),
 
