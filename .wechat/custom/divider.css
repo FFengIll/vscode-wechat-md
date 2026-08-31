@@ -1,0 +1,19 @@
+/**
+ * 自定义「divider」样式
+ *
+ * 写一条正常的 CSS 规则（选择器仅供参考，实际渲染时只会取花括号里的声明，
+ * 套到该类目的默认 HTML 结构上，作为 style="..." 属性内容）。
+ *
+ * 只有在样式面板里把「分割线」的预设选为「自定义」时，这份样式才会生效。
+ * 支持 var(--wechat-accent) 等主题色变量，会自动替换成当前主题的实际颜色。
+ *
+ * 默认的 <hr> 是 block 元素，会撑满容器宽度；这里用固定 width + margin: auto
+ * 让它变成一条居中的短线，而不是铺满整个页面。
+ */
+
+.wmd-hr, hr {
+  border: none;
+  border-top: 2px solid var(--wechat-accent);
+  width: 80px;
+  margin: 24px auto;
+}

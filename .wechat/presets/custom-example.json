@@ -1,0 +1,139 @@
+{
+  "_comment": "Example custom preset for vscode-wechat-md",
+  "_description": "This file demonstrates how to create a custom theme preset with a corporate brand style using blue tones. Copy this file and modify it to create your own preset.",
+
+  "id": "custom-corporate-blue",
+  "name": "Corporate Blue",
+  "description": "Professional corporate theme with blue accents and clean typography",
+  "author": "Your Name",
+  "version": "1.0.0",
+
+  "vars": {
+    "_comment_general": "=== General Theme Variables ===",
+
+    "accent": "#0066CC",
+    "_accent_comment": "Primary accent color used for links, borders, and decorative elements. This blue (#0066CC) conveys trust and professionalism.",
+
+    "fontSize": "16px",
+    "_fontSize_comment": "Base font size for paragraph text. Standard web font size for optimal readability.",
+
+    "lineHeight": "1.75",
+    "_lineHeight_comment": "Line height for text (unitless ratio). 1.75 provides comfortable reading spacing.",
+
+    "textColor": "#2C3E50",
+    "_textColor_comment": "Primary text color. Dark blue-gray (#2C3E50) is softer than pure black and reduces eye strain.",
+
+    "codeBg": "#F0F7FF",
+    "_codeBg_comment": "Background color for code blocks. Light blue tint (#F0F7FF) matches the corporate theme.",
+
+    "inlineCodeColor": "#0052A3",
+    "_inlineCodeColor_comment": "Text color for inline code. Darker blue (#0052A3) ensures good contrast against light background.",
+
+    "blockquoteBg": "#E8F4FD",
+    "_blockquoteBg_comment": "Background color for blockquotes. Very light blue (#E8F4FD) distinguishes quoted content.",
+
+    "maxWidth": "680px",
+    "_maxWidth_comment": "Maximum width of the content area. 680px is optimal for desktop reading.",
+
+    "_comment_headings": "=== Heading Styles ===",
+    "_headings_note": "Headings H1-H3 support background colors and padding. H4-H6 only support font size, weight, and color.",
+
+    "_comment_h1": "--- Level 1 Heading ---",
+    "h1FontSize": "28px",
+    "h1FontWeight": "700",
+    "h1Color": "#003366",
+    "h1Bg": "#E8F4FD",
+    "h1Padding": "12px 16px",
+    "h1BorderRadius": "6px",
+    "_h1_note": "H1 has a light blue background (#E8F4FD) with rounded corners, making it stand out as a major section header.",
+
+    "_comment_h2": "--- Level 2 Heading ---",
+    "h2FontSize": "24px",
+    "h2FontWeight": "600",
+    "h2Color": "#004080",
+    "h2Bg": "transparent",
+    "h2Padding": "0",
+    "h2BorderRadius": "0",
+    "_h2_note": "H2 uses a solid left border (from accent color) for visual hierarchy without background.",
+
+    "_comment_h3": "--- Level 3 Heading ---",
+    "h3FontSize": "20px",
+    "h3FontWeight": "600",
+    "h3Color": "#0052A3",
+    "h3Bg": "transparent",
+    "h3Padding": "0",
+    "h3BorderRadius": "0",
+    "_h3_note": "H3 continues the color hierarchy with a medium blue, maintaining visual consistency.",
+
+    "_comment_h4": "--- Level 4 Heading ---",
+    "h4FontSize": "18px",
+    "h4FontWeight": "600",
+    "h4Color": "#0066CC",
+    "_h4_note": "H4 uses the primary accent color for visual connection to links and interactive elements.",
+
+    "_comment_h5": "--- Level 5 Heading ---",
+    "h5FontSize": "16px",
+    "h5FontWeight": "600",
+    "h5Color": "#0073E6",
+    "_h5_note": "H5 uses a lighter blue while maintaining sufficient contrast for readability.",
+
+    "_comment_h6": "--- Level 6 Heading ---",
+    "h6FontSize": "15px",
+    "h6FontWeight": "600",
+    "h6Color": "#3385FF",
+    "_h6_note": "H6 is the lightest heading color, suitable for minor subdivisions."
+  },
+
+  "decorations": {
+    "_comment": "=== Optional Decorations ===",
+    "_note": "These are optional decorative elements for future expansion",
+
+    "h1Divider": false,
+    "_h1Divider_comment": "Whether to show a divider line below H1 headings (not yet implemented).",
+
+    "h2Icon": "",
+    "_h2Icon_comment": "Optional icon/emoji to display before H2 headings (not yet implemented). Example: '📘'",
+
+    "quoteStyle": "classic",
+    "_quoteStyle_comment": "Blockquote style: 'classic', 'modern', or 'minimal' (not yet implemented)."
+  },
+
+  "preview": {
+    "_comment": "=== Preview Colors for UI ===",
+    "_note": "These colors are used in the theme dashboard UI to preview the preset.",
+
+    "primary": "#0066CC",
+    "_primary_comment": "Primary preview color - typically the same as accent color.",
+
+    "background": "#FFFFFF",
+    "_background_comment": "Background preview color - usually white or very light tint.",
+
+    "accent": "#0052A3",
+    "_accent_comment": "Accent preview color - used for highlights and secondary UI elements."
+  },
+
+  "_usage_instructions": {
+    "how_to_use": [
+      "1. Copy this file to create your own preset",
+      "2. Rename it (e.g., 'my-custom-theme.json')",
+      "3. Update the 'id' field with a unique identifier (lowercase, hyphens only)",
+      "4. Modify the 'name' and 'description' to describe your theme",
+      "5. Adjust color values in the 'vars' section to match your brand",
+      "6. Update the 'preview' colors to match your theme",
+      "7. Place the file in the .wechat/presets/ directory",
+      "8. Select it from the theme dashboard in VSCode"
+    ],
+    "color_formats": [
+      "Use hex colors: '#RRGGBB' or '#RRGGBBAA' (with alpha)",
+      "Use named colors: 'red', 'blue', 'transparent'",
+      "Use functional colors: 'rgb(255, 0, 0)' or 'rgba(255, 0, 0, 0.5)'"
+    ],
+    "tips": [
+      "Maintain sufficient contrast for accessibility (WCAG AA: 4.5:1 for normal text)",
+      "Test your theme in WeChat's actual editor preview",
+      "Keep heading colors darker than body text for hierarchy",
+      "Use accent color sparingly for emphasis",
+      "Consider color blindness when choosing color combinations"
+    ]
+  }
+}
