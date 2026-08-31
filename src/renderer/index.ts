@@ -9,6 +9,7 @@ import { PresetManager } from './PresetManager';
 import { isCustomPresetId, StylePresetCategory } from './stylePresets';
 import { transformToWeChatFormat, normalizeLang as wxNormalizeLang } from './wechatTransformer';
 import { parseFrontMatter, FrontMatter } from './frontMatter';
+import { applyContainers } from './containers';
 
 // Shiki transformer: adds data-line-number to each line span and wraps the
 // pre block with a card div + language label for the preview panel.
@@ -115,6 +116,8 @@ export class WeChatRenderer {
     applyWeChatRules(this.mdCopy,    this._currentTheme, 'copy');
     this.mdPreview.use(frontMatterPlugin, (raw: string) => { this._lastFrontMatter = parseFrontMatter(raw); });
     this.mdCopy.use(frontMatterPlugin, (raw: string) => { this._lastFrontMatter = parseFrontMatter(raw); });
+    applyContainers(this.mdPreview);
+    applyContainers(this.mdCopy);
   }
 
   // Initialize shiki via @shikijs/markdown-it plugin — call once on activation.
