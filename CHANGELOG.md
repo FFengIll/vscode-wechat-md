@@ -6,4 +6,6 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+- Added per-category custom style: every style-preset category (headings, blockquote, list, link, image, divider, table, inline code) now has a "Custom" option that reads user-authored CSS from `.wechat/custom/<category>.css`.
+- Removed the legacy global `.wechat/theme.override.ts` override mechanism in favor of the per-category custom style above.
 - Initial release

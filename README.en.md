@@ -16,13 +16,9 @@ A side panel renders your Markdown in WeChat-compatible styles as you type. The 
 
 Click **✂️ Copy Content** in the toolbar to write fully inlined rich-text HTML to the clipboard. Local images are automatically converted to Base64. Paste directly into the WeChat editor — no manual cleanup needed.
 
-### Copy Raw HTML
+### Style Management Panel
 
-Click **📋 Copy HTML** in the toolbar to get the raw inline-styled HTML string, useful for custom publishing workflows or further processing.
-
-### Custom Theme
-
-Click **🎨 Custom Style** in the toolbar to generate and open `.wechat/theme.css` in your workspace. Edit CSS variables to control colors, font size, line height, and more. Changes take effect immediately in the preview on save.
+Click **🎨 Style Management** in the toolbar to open a dedicated panel where you can switch the built-in color theme, and pick a decoration style for each element category (headings, blockquote, lists, links, images, dividers, tables, inline code) — or pick "Custom" per category to use your own hand-written CSS. Hover any option for a live rendered preview. All changes apply instantly.
 
 ### Supported Markdown Elements
 
@@ -63,9 +59,9 @@ Open any `.md` file, then trigger the preview via:
 
 ---
 
-## Custom Theme
+## Global Theme Colors
 
-Clicking **🎨 Custom Style** creates `.wechat/theme.css` at your workspace root with the following configurable variables:
+Create `.wechat/theme.css` at your workspace root (open it from the Style Management Panel, or create it by hand) to override the accent color, font size, line height and more via CSS custom properties:
 
 ```css
 :root {
@@ -84,12 +80,35 @@ Save the file and the preview updates instantly — no restart required.
 
 ---
 
+## Per-Category Custom Style
+
+Beyond the built-in decoration presets, every element category (headings, blockquote, list, link, image, divider, table, inline code) has a **"Custom"** option in the Style Management Panel. Selecting it switches that category over to CSS you write yourself:
+
+1. Pick "Custom" for a category in the panel.
+2. Click the **✎ Edit Custom Style** link under that category's options — it creates and opens `.wechat/custom/<category>.css` (e.g. `.wechat/custom/h1.css`).
+3. The file is a normal, valid CSS rule (selector + `{ }`). The selector is for readability only — only the declarations inside the braces are read and inlined onto that category's default HTML structure:
+
+   ```css
+   /* .wechat/custom/h1.css */
+   .wmd-h1, h1 {
+     text-align: center;
+     border-bottom: 4px solid var(--wechat-accent);
+     padding-bottom: 12px;
+   }
+   ```
+
+4. Save and the preview hot-reloads. `var(--wechat-accent)` and friends are substituted with the active theme's actual color.
+
+Category → file name: `h1` `h2` `h3` `blockquote` `list` `link` `image` `divider` `table` `inlineCode` (i.e. the file is always `.wechat/custom/<category key>.css`).
+
+---
+
 ## Commands
 
 | Command | ID | Description |
 |---------|----|-------------|
 | Preview Markdown | `wechat-md.preview` | Open / focus the preview panel |
-| Copy HTML to Clipboard | `wechat-md.copyHtml` | Copy raw HTML to clipboard |
+| Open Style Management Panel | `wechat-md.openStylePanel` | Open the style management panel |
 
 ---
 
@@ -97,7 +116,7 @@ Save the file and the preview updates instantly — no restart required.
 
 - WeChat's editor strips external CSS. This extension inlines **all styles** on every element, so formatting is preserved exactly after pasting.
 - Local images are encoded as Base64 during rich-text copy, so they display correctly in the WeChat editor without manual uploads.
-- Consider committing `.wechat/theme.css` to version control to share a consistent style across your team.
+- Consider committing `.wechat/theme.css` and `.wechat/custom/` to version control to share a consistent style across your team.
 
 ---
 
