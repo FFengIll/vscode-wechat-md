@@ -8,19 +8,11 @@ import * as vscode from 'vscode';
 import { getStylePresets, StylePresetCategory, StylePreset, allStylePresets, getCategorySelector as getCategorySelectorFor } from './stylePresets';
 import type { ThemeVars } from './theme';
 
-export interface SelectedPresets {
-  h1?: string;
-  h2?: string;
-  h3?: string;
-  blockquote?: string;
-  list?: string;
-  link?: string;
-  image?: string;
-  divider?: string;
-  table?: string;
-  inlineCode?: string;
-  codeBlock?: string;
-}
+// Keyed by StylePresetCategory so adding a category to stylePresets.ts's
+// allStylePresets automatically gets a slot here too — no separate list to
+// keep in sync (this used to be a fixed set of optional fields and needed a
+// manual edit for every new category).
+export type SelectedPresets = Partial<Record<StylePresetCategory, string>>;
 
 /**
  * Manages style presets selection and application

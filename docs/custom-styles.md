@@ -6,7 +6,7 @@
 
 样式管理面板（`WeChat MD: Open Style Management Panel`）里，每个元素类目除了内置的装饰预设，列表最后都有一项 **「自定义」**。选中它之后，该类目改用你自己写的 CSS，而不是内置预设。
 
-一共 10 个类目：
+一共 12 个类目：
 
 | 类目 key | 对应内容 | 自定义文件路径 | 默认结构选择器 |
 |---|---|---|---|
@@ -20,6 +20,10 @@
 | `divider` | 分割线 | `.wechat/custom/divider.css` | `.wmd-hr, hr` |
 | `table` | 表格 | `.wechat/custom/table.css` | `.wmd-table, table` |
 | `inlineCode` | 行内代码 | `.wechat/custom/inlineCode.css` | `.wmd-code, code` |
+| `codeBlock` | 代码块 | `.wechat/custom/codeBlock.css` | `.wmd-pre, pre` |
+| `header` | frontmatter `header:` 字段 | `.wechat/custom/header.css` | `.wmd-header`（无对应 HTML 元素，纯文档用途） |
+
+`header` 是特例，见第 8 节——它不是样式面板里能选预设的类目，目前只能通过 `.wechat/custom/header.css` 自定义。
 
 文件名固定就是「类目 key + `.css`」，不是预设 id（预设 id 各类目前缀不一样，比如 blockquote 类目的预设 id 是 `quote-xxx`，但文件永远叫 `blockquote.css`）。
 
@@ -116,17 +120,41 @@ const CATEGORY_THEME_KEY: Partial<Record<string, keyof Theme>> = {
 - 微信编辑器最终只认 inline style，**不支持** `:hover`、`::before`/`::after` 伪元素、媒体查询等任何需要"选择器语法"才能表达的效果——这也是为什么文件里的选择器不参与渲染，只取声明。凡是内置预设里出现的"伪元素装饰"（比如 `hr-text` 的 ●●● 文字分割线），都是手写 HTML 结构实现的，自定义 CSS 做不到。
 - `var()` 变量替换是纯文本替换，只支持上表列出的几个变量名，不认识的 `var(--xxx)` 会原样保留在最终 style 里（浏览器里显示为无效值，等同于没设置）。
 
-## 8. 涉及的源码（给以后要改这块逻辑的人）
+## 8. Frontmatter 与 `header` 字段（最小实现，未来再扩展）
+
+文档最开头可以写一段标准的 frontmatter：
+
+```markdown
+---
+header: 欢迎阅读本期内容
+---
+
+# 正文标题
+
+正文内容……
+```
+
+`---` 之间的内容会在解析阶段被整块摘掉，不会出现在渲染结果里（不会被误解析成分割线或段落文本），用的是 `markdown-it-front-matter` 插件（`src/renderer/index.ts` 构造函数里给 `mdPreview`/`mdCopy` 都接了一份），冒号分隔的 `key: value` 由 `src/renderer/frontMatter.ts` 的 `parseFrontMatter()` 解析成 `Record<string, string>`——目前只支持扁平字段，不支持嵌套/数组/多行值。
+
+`header` 字段会被当作正文内容渲染在文章最前面：
+
+- **默认（没有 `.wechat/custom/header.css`）：跟普通段落长得一样**——用的是 `theme.p` 的样式（`src/renderer/index.ts` 的 `CATEGORY_THEME_KEY` 里 `header: 'p'` 这行）。这跟其它类目的"自定义叠加基础样式"是同一套逻辑，只是 `header` 目前**没有样式面板里的预设选择器**，只能靠手写 `.wechat/custom/header.css` 来定制外观（文件机制和其它类目完全一样，`customStyles.ts` 的几个函数是对 `StylePresetCategory` 泛型操作的，`header` 注册进 `allStylePresets` 之后自动就能用，不需要额外代码）。
+- 文档没有 `header:` 字段——什么都不渲染，正文和没有这套机制时完全一样。
+
+这是刻意做的最小实现：先把「frontmatter 解析」这个基础设施打通、`header` 这一个字段能跑通，样式面板里的预设选择器（内置几个"横幅/胶囊"效果之类）留到以后有需要再补，不影响现在直接用。
+
+## 9. 涉及的源码（给以后要改这块逻辑的人）
 
 | 文件 | 职责 |
 |---|---|
+| `src/renderer/frontMatter.ts` | `parseFrontMatter()`——极简的 frontmatter 逐行 `key: value` 解析器 |
 | `src/renderer/stylePresets.ts` | 每个类目预设数组末尾的 `-custom` 哨兵项定义；`getCustomPresetId`/`isCustomPresetId`；类目→选择器映射 `getCategorySelector` |
 | `src/renderer/customStyles.ts` | 纯文件系统读写：`loadCustomCSS`/`loadAllCustomCSS`/`ensureCustomStyleFile`/`getCustomStylePath`；CSS 规则花括号提取逻辑 `extractDeclarations` |
 | `src/renderer/StylePresetManager.ts` | `replaceCSSVariables()`（供内置预设和自定义 CSS 共用）；面板选中状态的读写（存在 `workspaceState['selectedStylePresets']`，不是文件） |
-| `src/renderer/index.ts` | `_applyStylePresetOverrides()` 里的 `getCSS()` 辅助函数——命中 `-custom` 时读自定义 CSS、做变量替换、叠加 `CATEGORY_THEME_KEY` 对应的主题基础样式；`list-custom`/`table-custom` 分支 |
+| `src/renderer/index.ts` | `_applyStylePresetOverrides()` 里的 `getCSS()` 辅助函数——命中 `-custom` 时读自定义 CSS、做变量替换、叠加 `CATEGORY_THEME_KEY` 对应的主题基础样式；`list-custom`/`table-custom` 分支；`render()` 里 frontmatter 解析结果的读取和 `header` 块注入 |
 | `src/panel/PreviewPanel.ts` | `applyCustomStylesToRenderer()` 汇总所有类目的自定义 CSS 传给渲染器；`.wechat/custom/*.css` 的文件监听 |
 | `src/panel/StylePanel.ts` | 「✎ 编辑自定义样式」链接的消息处理 `openCustomStyleFile`；hover 预览时读取自定义文件内容 |
 
-## 9. 示例
+## 10. 示例
 
 仓库里 `example/.wechat/custom/` 下有可以直接参考的示例文件（居中 + 主题色下划线的 H1、固定长度的分割线）。

@@ -866,6 +866,23 @@ export const codeBlockStyles: StylePreset[] = [
 ];
 
 // ============================================================================
+// HEADER STYLES (frontmatter `header:` field, rendered into the body)
+// ============================================================================
+// Minimal v1: no preset picker in the Style Panel yet — the field renders
+// with normal paragraph styling by default (see CATEGORY_THEME_KEY in
+// index.ts, which maps this category to theme.p) and can be customized right
+// now only via .wechat/custom/header.css. A real preset picker is future
+// work; this single entry exists so the category has a well-formed default.
+export const headerStyles: StylePreset[] = [
+  {
+    id: 'header-default',
+    name: '默认（跟随正文）',
+    description: '和普通段落一样的样式，可用 .wechat/custom/header.css 追加自定义样式',
+    css: ''
+  }
+];
+
+// ============================================================================
 // EXPORT ALL
 // ============================================================================
 
@@ -880,7 +897,8 @@ export const allStylePresets = {
   divider: dividerStyles,
   table: tableStyles,
   inlineCode: inlineCodeStyles,
-  codeBlock: codeBlockStyles
+  codeBlock: codeBlockStyles,
+  header: headerStyles
 };
 
 export type StylePresetCategory = keyof typeof allStylePresets;
@@ -912,7 +930,8 @@ const CUSTOM_PRESET_IDS: Record<StylePresetCategory, string> = {
   divider: 'hr-custom',
   table: 'table-custom',
   inlineCode: 'inline-code-custom',
-  codeBlock: 'codeBlock-custom'
+  codeBlock: 'codeBlock-custom',
+  header: 'header-custom' // reserved: no picker wires this yet (see headerStyles comment)
 };
 
 export function getCustomPresetId(category: StylePresetCategory): string {
@@ -942,7 +961,8 @@ const CATEGORY_SELECTORS: Record<StylePresetCategory, string> = {
   divider: '.wmd-hr, hr',
   table: '.wmd-table, table',
   inlineCode: '.wmd-code, code',
-  codeBlock: '.wmd-pre, pre'
+  codeBlock: '.wmd-pre, pre',
+  header: '.wmd-header'
 };
 
 export function getCategorySelector(category: StylePresetCategory): string {

@@ -17,6 +17,9 @@ importers:
       markdown-it:
         specifier: ^14.3.0
         version: 14.3.0
+      markdown-it-front-matter:
+        specifier: ^0.2.4
+        version: 0.2.4
       shiki:
         specifier: ^4.3.1
         version: 4.3.1
@@ -956,6 +959,9 @@ packages:
   make-dir@4.0.0:
     resolution: {integrity: sha512-hXdUTZYIVOt1Ex//jAQi+wTZZpUpwBj/0QsOzqegb3rGMMeJiSEu5xLHnYfBrRV4RH2+OCSOO95Is/7x1WJ4bw==, tarball: https://registry.npmjs.org/make-dir/-/make-dir-4.0.0.tgz}
     engines: {node: '>=10'}
+
+  markdown-it-front-matter@0.2.4:
+    resolution: {integrity: sha512-25GUs0yjS2hLl8zAemVndeEzThB1p42yxuDEKbd4JlL3jiz+jsm6e56Ya8B0VREOkNxLYB4TTwaoPJ3ElMmW+w==, tarball: https://registry.npmjs.org/markdown-it-front-matter/-/markdown-it-front-matter-0.2.4.tgz}
 
   markdown-it@14.3.0:
     resolution: {integrity: sha512-RCEsPjR+sr0x+AuYp601tKTkgFG4YEPLCzHST3cQ/fhlJkqAkz1L2/Qbp1j9qw5SBwQHFBoW8+hoN5xssOF0Tw==, tarball: https://registry.npmjs.org/markdown-it/-/markdown-it-14.3.0.tgz}
@@ -2242,6 +2248,8 @@ snapshots:
   make-dir@4.0.0:
     dependencies:
       semver: 7.8.5
+
+  markdown-it-front-matter@0.2.4: {}
 
   markdown-it@14.3.0:
     dependencies:

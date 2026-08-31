@@ -1,9 +1,14 @@
 import MarkdownIt from 'markdown-it';
+// markdown-it-front-matter ships a .d.ts that imports the no-longer-valid
+// 'markdown-it/lib' subpath (stale against the current @types/markdown-it
+// layout) — require() it untyped rather than fight that broken declaration.
+const frontMatterPlugin = require('markdown-it-front-matter');
 import { buildTheme, loadThemeVars, Theme } from './theme';
 import { applyWeChatRules, RenderMode } from './rules';
 import { PresetManager } from './PresetManager';
 import { isCustomPresetId, StylePresetCategory } from './stylePresets';
 import { transformToWeChatFormat, normalizeLang as wxNormalizeLang } from './wechatTransformer';
+import { parseFrontMatter, FrontMatter } from './frontMatter';
 
 // Shiki transformer: adds data-line-number to each line span and wraps the
 // pre block with a card div + language label for the preview panel.
@@ -79,6 +84,7 @@ const CATEGORY_THEME_KEY: Partial<Record<string, keyof Theme>> = {
   divider: 'hr',
   inlineCode: 'inlineCode',
   codeBlock: 'pre',
+  header: 'p', // header has no dedicated theme entry — reuse plain paragraph styling as its base
 };
 
 export class WeChatRenderer {
@@ -96,12 +102,19 @@ export class WeChatRenderer {
   // lineNumberTransformer() for why mutating it is enough to pick up a newly
   // selected codeBlock preset without rebuilding the shiki plugin.
   private _codeBlockPreviewState: CodeBlockPreviewState = { css: '', decoration: 'none' };
+  // Frontmatter parsed from the most recent render() call (reset at the start
+  // of each render so a document with no frontmatter doesn't inherit the
+  // previous document's values). Populated synchronously by the
+  // markdown-it-front-matter plugin's callback during md.render().
+  private _lastFrontMatter: FrontMatter | null = null;
 
   constructor() {
     this.mdPreview = new MarkdownIt({ html: true, linkify: true, typographer: true });
     this.mdCopy    = new MarkdownIt({ html: true, linkify: true, typographer: true });
     applyWeChatRules(this.mdPreview, this._currentTheme, 'preview');
     applyWeChatRules(this.mdCopy,    this._currentTheme, 'copy');
+    this.mdPreview.use(frontMatterPlugin, (raw: string) => { this._lastFrontMatter = parseFrontMatter(raw); });
+    this.mdCopy.use(frontMatterPlugin, (raw: string) => { this._lastFrontMatter = parseFrontMatter(raw); });
   }
 
   // Initialize shiki via @shikijs/markdown-it plugin — call once on activation.
@@ -651,7 +664,25 @@ export class WeChatRenderer {
   // mode='copy': WeChat editor-compatible structure for pasting
   render(markdown: string, mode: RenderMode = 'preview'): string {
     const md = mode === 'copy' ? this.mdCopy : this.mdPreview;
+    this._lastFrontMatter = null;
     const inner = md.render(markdown);
+
+    // frontmatter `header:` field, rendered into the body as normal paragraph
+    // content by default (theme.p) plus whatever .wechat/custom/header.css
+    // adds — see headerStyles in stylePresets.ts for why there's no preset
+    // picker for this yet. Renders nothing if the document has no `header`.
+    let headerHtml = '';
+    // Cast needed: TS narrows this._lastFrontMatter to the literal `null` from
+    // the assignment two lines up and doesn't widen it back after the
+    // md.render() call above, even though that call (via the frontmatter
+    // plugin's callback) may have just reassigned it.
+    const headerText = (this._lastFrontMatter as FrontMatter | null)?.header;
+    if (headerText) {
+      const customCSS = this._customStyleCSS['header'];
+      const substituted = customCSS ? (this._stylePresetManager?.replaceCSSVariables?.(customCSS) ?? customCSS) : '';
+      const css = substituted ? `${this._currentTheme.p}; ${substituted}` : this._currentTheme.p;
+      headerHtml = `<p style="${css}">${this._escapeHtml(headerText)}</p>\n`;
+    }
 
     // Include style preset CSS if present
     let styleAttr = this._currentTheme.container;
@@ -659,10 +690,10 @@ export class WeChatRenderer {
       // Wrap the content with style preset CSS
       return `<section style="${styleAttr}">
 <style type="text/css">${this._stylePresetCSS}</style>
-${inner}
+${headerHtml}${inner}
 </section>`;
     }
 
-    return `<section style="${styleAttr}">\n${inner}</section>`;
+    return `<section style="${styleAttr}">\n${headerHtml}${inner}</section>`;
   }
 }
