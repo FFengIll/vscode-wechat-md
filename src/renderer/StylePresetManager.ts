@@ -5,7 +5,7 @@
  */
 
 import * as vscode from 'vscode';
-import { getStylePresets, StylePresetCategory, StylePreset, allStylePresets } from './stylePresets';
+import { getStylePresets, StylePresetCategory, StylePreset, allStylePresets, getCategorySelector as getCategorySelectorFor } from './stylePresets';
 import type { ThemeVars } from './theme';
 
 export interface SelectedPresets {
@@ -48,9 +48,10 @@ export class StylePresetManager {
   }
 
   /**
-   * Replace CSS variables in preset CSS with actual values
+   * Replace CSS variables in preset CSS with actual values.
+   * Public so custom (user-authored) CSS can also use var(--wechat-accent) etc.
    */
-  private replaceCSSVariables(css: string): string {
+  replaceCSSVariables(css: string): string {
     if (!this.currentThemeVars) return css;
 
     const vars = this.currentThemeVars;
@@ -197,19 +198,7 @@ export class StylePresetManager {
    * Get CSS selector for a category
    */
   private getCategorySelector(category: StylePresetCategory): string {
-    const selectors: Record<StylePresetCategory, string> = {
-      h1: '.wmd-h1, h1',
-      h2: '.wmd-h2, h2',
-      h3: '.wmd-h3, h3',
-      blockquote: '.wmd-blockquote, blockquote',
-      list: '.wmd-ul, ul, .wmd-ol, ol',
-      link: '.wmd-a, a',
-      image: '.wmd-img, img',
-      divider: '.wmd-hr, hr',
-      table: '.wmd-table, table',
-      inlineCode: '.wmd-code, code'
-    };
-    return selectors[category] || category;
+    return getCategorySelectorFor(category) || category;
   }
 
   /**

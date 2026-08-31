@@ -4,7 +4,8 @@ import * as path from 'path';
 // Default WeChat-compatible inline style values.
 // All styles must be inline — WeChat strips <style> blocks and external CSS.
 // Values here can be overridden by .wechat/theme.css CSS variables.
-// For advanced customization, you can also use .wechat/theme.override.ts
+// For per-category advanced customization, see .wechat/custom/<category>.css
+// (src/renderer/customStyles.ts) selected via each category's "custom" preset.
 
 export interface ThemeVars {
   accent: string;
@@ -209,26 +210,3 @@ export function buildTheme(v: ThemeVars, customCSS?: Record<string, string>) {
 }
 
 export type Theme = ReturnType<typeof buildTheme>;
-
-// Theme override function type for advanced customization via .wechat/theme.override.ts
-export type ThemeOverrideFunction = (theme: Theme) => Partial<Theme>;
-
-// Load theme override from .wechat/theme.override.ts if it exists
-export function loadThemeOverride(overridePath: string | null): ThemeOverrideFunction | null {
-  if (!overridePath) { return null; }
-  try {
-    // Clear require cache to support hot-reload during development
-    delete require.cache[require.resolve(overridePath)];
-    const module = require(overridePath);
-    return typeof module.overrideTheme === 'function' ? module.overrideTheme : null;
-  } catch {
-    return null;
-  }
-}
-
-// Apply theme override to the base theme
-export function applyThemeOverride(theme: Theme, overrideFn: ThemeOverrideFunction | null): Theme {
-  if (!overrideFn) { return theme; }
-  const overrides = overrideFn(theme);
-  return { ...theme, ...overrides };
-}

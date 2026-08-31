@@ -109,6 +109,12 @@ export const h1Styles: StylePreset[] = [
     description: '两侧圆点',
     css: 'display: flex; align-items: center; justify-content: center;' +
           '&:before, &:after { content: "●"; color: var(--wechat-accent); margin: 0 12px; }'
+  },
+  {
+    id: 'h1-custom',
+    name: '自定义',
+    description: '使用你自己编写的样式',
+    css: ''
   }
 ];
 
@@ -188,6 +194,12 @@ export const h2Styles: StylePreset[] = [
     name: '波浪线',
     description: '底部波浪',
     css: 'border-bottom: 2px wavy var(--wechat-accent); padding-bottom: 6px;'
+  },
+  {
+    id: 'h2-custom',
+    name: '自定义',
+    description: '使用你自己编写的样式',
+    css: ''
   }
 ];
 
@@ -255,6 +267,12 @@ export const h3Styles: StylePreset[] = [
     name: '标签',
     description: '标签样式',
     css: 'background: var(--wechat-accent); color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.9em; margin: 1.2em 0 0.6em;'
+  },
+  {
+    id: 'h3-custom',
+    name: '自定义',
+    description: '使用你自己编写的样式',
+    css: ''
   }
 ];
 
@@ -323,6 +341,12 @@ export const blockquoteStyles: StylePreset[] = [
     name: '左条背景',
     description: '竖条+背景',
     css: 'background: #f0f0f0; border-left: 4px solid var(--wechat-accent); padding: 12px 16px; margin: 16px 0; border-radius: 0 6px 6px 0;'
+  },
+  {
+    id: 'quote-custom',
+    name: '自定义',
+    description: '使用你自己编写的样式',
+    css: ''
   }
 ];
 
@@ -411,6 +435,12 @@ export const listMarkerStyles: StylePreset[] = [
     name: '点数字',
     description: '1. 数字',
     css: 'list-style-type: decimal;'
+  },
+  {
+    id: 'list-custom',
+    name: '自定义',
+    description: '使用你自己编写的样式',
+    css: ''
   }
 ];
 
@@ -467,6 +497,12 @@ export const linkStyles: StylePreset[] = [
     name: '按钮式',
     description: '按钮样式',
     css: 'display: inline-block; background: var(--wechat-accent); color: #fff; padding: 6px 16px; border-radius: 6px; text-decoration: none;'
+  },
+  {
+    id: 'link-custom',
+    name: '自定义',
+    description: '使用你自己编写的样式',
+    css: ''
   }
 ];
 
@@ -528,6 +564,12 @@ export const imageStyles: StylePreset[] = [
     name: '居中',
     description: '居中显示',
     css: 'display: block; margin: 16px auto;'
+  },
+  {
+    id: 'img-custom',
+    name: '自定义',
+    description: '使用你自己编写的样式',
+    css: ''
   }
 ];
 
@@ -611,6 +653,12 @@ export const dividerStyles: StylePreset[] = [
     name: '空白',
     description: '仅留白',
     css: 'border: none; height: 32px; margin: 24px 0;'
+  },
+  {
+    id: 'hr-custom',
+    name: '自定义',
+    description: '使用你自己编写的样式',
+    css: ''
   }
 ];
 
@@ -669,6 +717,12 @@ export const tableStyles: StylePreset[] = [
           'th, td { border: none; padding: 12px 16px; text-align: left; }' +
           'th { background: #333; color: #fff; font-weight: 600; }' +
           'tr:nth-child(even) { background: #f9f9f9; }'
+  },
+  {
+    id: 'table-custom',
+    name: '自定义',
+    description: '使用你自己编写的样式',
+    css: ''
   }
 ];
 
@@ -736,6 +790,12 @@ export const inlineCodeStyles: StylePreset[] = [
     name: '渐变',
     description: '渐变背景',
     css: 'background: linear-gradient(135deg, var(--wechat-accent) 0%, rgba(255,255,255,0.3) 100%); color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 14px;'
+  },
+  {
+    id: 'inline-code-custom',
+    name: '自定义',
+    description: '使用你自己编写的样式',
+    css: ''
   }
 ];
 
@@ -764,4 +824,58 @@ export function getStylePresets(category: StylePresetCategory): StylePreset[] {
 
 export function getPresetById(category: StylePresetCategory, id: string): StylePreset | undefined {
   return allStylePresets[category]?.find(p => p.id === id);
+}
+
+// ============================================================================
+// PER-CATEGORY "CUSTOM" PRESET
+// ============================================================================
+// Each category's preset list ends with a sentinel "custom" preset whose id
+// follows that category's own existing id prefix convention (not necessarily
+// the category key itself — e.g. blockquote's ids are prefixed "quote-").
+// Selecting it tells the renderer to read user-authored CSS from
+// .wechat/custom/<category>.css instead of a built-in preset's `css` field.
+const CUSTOM_PRESET_IDS: Record<StylePresetCategory, string> = {
+  h1: 'h1-custom',
+  h2: 'h2-custom',
+  h3: 'h3-custom',
+  blockquote: 'quote-custom',
+  list: 'list-custom',
+  link: 'link-custom',
+  image: 'img-custom',
+  divider: 'hr-custom',
+  table: 'table-custom',
+  inlineCode: 'inline-code-custom'
+};
+
+export function getCustomPresetId(category: StylePresetCategory): string {
+  return CUSTOM_PRESET_IDS[category];
+}
+
+export function isCustomPresetId(category: StylePresetCategory, id: string | undefined): boolean {
+  return !!id && id === CUSTOM_PRESET_IDS[category];
+}
+
+// ============================================================================
+// CATEGORY -> CSS SELECTOR
+// ============================================================================
+// The selector each category's default HTML structure matches. Used to author
+// .wechat/custom/<category>.css as a normal, valid CSS rule (selector + { }),
+// rather than a bag of bare declarations — this keeps the file real CSS the
+// editor can lint/highlight/autocomplete. Only the declarations inside the
+// braces are ever read; the selector itself is documentation, not wiring.
+const CATEGORY_SELECTORS: Record<StylePresetCategory, string> = {
+  h1: '.wmd-h1, h1',
+  h2: '.wmd-h2, h2',
+  h3: '.wmd-h3, h3',
+  blockquote: '.wmd-blockquote, blockquote',
+  list: '.wmd-ul, ul, .wmd-ol, ol',
+  link: '.wmd-a, a',
+  image: '.wmd-img, img',
+  divider: '.wmd-hr, hr',
+  table: '.wmd-table, table',
+  inlineCode: '.wmd-code, code'
+};
+
+export function getCategorySelector(category: StylePresetCategory): string {
+  return CATEGORY_SELECTORS[category];
 }

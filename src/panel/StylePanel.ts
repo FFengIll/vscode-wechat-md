@@ -2,10 +2,11 @@
 import * as vscode from 'vscode';
 import { PresetManager } from '../renderer/PresetManager';
 import { StylePresetManager } from '../renderer/StylePresetManager';
-import { getStylePresets, StylePresetCategory } from '../renderer/stylePresets';
+import { getStylePresets, StylePresetCategory, isCustomPresetId } from '../renderer/stylePresets';
 import type { ThemeVars } from '../renderer/theme';
 import { WeChatRenderer } from '../renderer';
 import { getNonce } from './PreviewPanel';
+import { ensureCustomStyleFile, loadCustomCSS } from '../renderer/customStyles';
 
 // Small markdown snippets used to render a live preview of each style category.
 // The snippet is rendered through the real WeChatRenderer so the tooltip shows
@@ -364,6 +365,19 @@ export class StylePanel {
       opacity: 0.75;
     }
 
+    /* ── Edit-custom-style link (shown under each category's chip grid) ── */
+    .edit-custom-link {
+      display: inline-block;
+      font-size: 10px;
+      color: var(--vscode-textLink-foreground);
+      cursor: pointer;
+      margin: -2px 0 12px;
+      text-decoration: none;
+      user-select: none;
+    }
+    .edit-custom-link:hover { text-decoration: underline; }
+    .edit-custom-link::before { content: '✎ '; }
+
     /* ── Footer action bar ── */
     .action-bar {
       position: fixed;
@@ -429,36 +443,46 @@ export class StylePanel {
     <div class="tab-pane" id="pane-heading">
       <div class="group-label">H1 样式</div>
       <div class="chip-grid" id="h1-presets"></div>
+      <a class="edit-custom-link" data-category="h1">编辑自定义样式</a>
       <div class="group-label">H2 样式</div>
       <div class="chip-grid" id="h2-presets"></div>
+      <a class="edit-custom-link" data-category="h2">编辑自定义样式</a>
       <div class="group-label">H3 样式</div>
       <div class="chip-grid" id="h3-presets"></div>
+      <a class="edit-custom-link" data-category="h3">编辑自定义样式</a>
     </div>
 
     <!-- Block tab -->
     <div class="tab-pane" id="pane-block">
       <div class="group-label">引用样式</div>
       <div class="chip-grid" id="blockquote-presets"></div>
+      <a class="edit-custom-link" data-category="blockquote">编辑自定义样式</a>
     </div>
 
     <!-- List tab -->
     <div class="tab-pane" id="pane-list">
       <div class="group-label">列表样式</div>
       <div class="chip-grid" id="list-presets"></div>
+      <a class="edit-custom-link" data-category="list">编辑自定义样式</a>
     </div>
 
     <!-- Misc tab -->
     <div class="tab-pane" id="pane-misc">
       <div class="group-label">链接样式</div>
       <div class="chip-grid" id="link-presets"></div>
+      <a class="edit-custom-link" data-category="link">编辑自定义样式</a>
       <div class="group-label">图片样式</div>
       <div class="chip-grid" id="image-presets"></div>
+      <a class="edit-custom-link" data-category="image">编辑自定义样式</a>
       <div class="group-label">分割线样式</div>
       <div class="chip-grid" id="divider-presets"></div>
+      <a class="edit-custom-link" data-category="divider">编辑自定义样式</a>
       <div class="group-label">表格样式</div>
       <div class="chip-grid" id="table-presets"></div>
+      <a class="edit-custom-link" data-category="table">编辑自定义样式</a>
       <div class="group-label">行内代码样式</div>
       <div class="chip-grid" id="inlineCode-presets"></div>
+      <a class="edit-custom-link" data-category="inlineCode">编辑自定义样式</a>
     </div>
   </div>
 
@@ -500,6 +524,13 @@ export class StylePanel {
       });
       document.getElementById('apply-btn').addEventListener('click', () => {
         vscode.postMessage({ type: 'applyToPreview' });
+      });
+
+      // ── Edit-custom-style links ──
+      document.querySelectorAll('.edit-custom-link').forEach(link => {
+        link.addEventListener('click', () => {
+          vscode.postMessage({ type: 'openCustomStyleFile', category: link.dataset.category });
+        });
       });
 
       // ── Floating preview tooltip ──
@@ -704,6 +735,28 @@ export class StylePanel {
       case 'previewStyle':
         await this.handlePreviewStyle(message);
         break;
+
+      case 'openCustomStyleFile':
+        if (message.category) {
+          this.openOrCreateCustomStyleFile(message.category as StylePresetCategory);
+        }
+        break;
+    }
+  }
+
+  /**
+   * Open (creating if needed) the .wechat/custom/<category>.css file for the
+   * given category, mirroring PreviewPanel.openOrCreateCustomTheme()'s pattern.
+   */
+  private openOrCreateCustomStyleFile(category: StylePresetCategory): void {
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (!workspaceFolders || workspaceFolders.length === 0) {
+      vscode.window.showWarningMessage('请先打开一个工作区文件夹。');
+      return;
+    }
+    const filePath = ensureCustomStyleFile(category, workspaceFolders[0].uri.fsPath);
+    if (filePath) {
+      vscode.window.showTextDocument(vscode.Uri.file(filePath));
     }
   }
 
@@ -751,7 +804,11 @@ export class StylePanel {
     // Reload theme (picks up active preset vars/accent), then apply ONLY the
     // single candidate preset for this category so the preview is isolated.
     this.previewRenderer.reloadTheme(null);
-    this.previewRenderer.setStylePresetOverrides({ [category]: presetId });
+    const cat = category as StylePresetCategory;
+    const customCSS = isCustomPresetId(cat, presetId)
+      ? { [cat]: loadCustomCSS(cat, this.getWorkspaceRoot()) }
+      : undefined;
+    this.previewRenderer.setStylePresetOverrides({ [category]: presetId }, customCSS);
 
     return this.previewRenderer.render(markdown, 'preview');
   }
@@ -811,6 +868,12 @@ export class StylePanel {
       type: 'updateAllStylePresets',
       state
     });
+  }
+
+  private getWorkspaceRoot(): string | null {
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (!workspaceFolders || workspaceFolders.length === 0) { return null; }
+    return workspaceFolders[0].uri.fsPath;
   }
 
   dispose(): void {

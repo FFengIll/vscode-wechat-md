@@ -6,6 +6,7 @@ import { buildWebviewHtml } from './webview';
 import { resolveImagesAsBase64 } from './imageUtils';
 import { PresetManager } from '../renderer/PresetManager';
 import { StylePresetManager } from '../renderer/StylePresetManager';
+import { loadAllCustomCSS } from '../renderer/customStyles';
 
 export class PreviewPanel {
   static currentPanel: PreviewPanel | undefined;
@@ -146,8 +147,7 @@ export class PreviewPanel {
     }
     // Re-read custom theme on each refresh so edits apply immediately
     const cssPath = this.getCustomThemePath();
-    const overridePath = this.getThemeOverridePath();
-    this.renderer.reloadTheme(cssPath, overridePath);
+    this.renderer.reloadTheme(cssPath);
 
     // Apply custom style overrides from the panel
     this.applyCustomStylesToRenderer();
@@ -203,13 +203,6 @@ export class PreviewPanel {
     return fs.existsSync(p) ? p : null;
   }
 
-  private getThemeOverridePath(): string | null {
-    const workspaceFolders = vscode.workspace.workspaceFolders;
-    if (!workspaceFolders || workspaceFolders.length === 0) { return null; }
-    const p = path.join(workspaceFolders[0].uri.fsPath, '.wechat', 'theme.override.ts');
-    return fs.existsSync(p) ? p : null;
-  }
-
   private watchCustomTheme(): void {
     const workspaceFolders = vscode.workspace.workspaceFolders;
     if (!workspaceFolders || workspaceFolders.length === 0) { return; }
@@ -221,13 +214,14 @@ export class PreviewPanel {
     cssWatcher.onDidDelete(() => this.refresh(), null, this.disposables);
     this.disposables.push(cssWatcher);
 
-    const overrideWatcher = vscode.workspace.createFileSystemWatcher(
-      new vscode.RelativePattern(workspaceFolders[0], '.wechat/theme.override.ts')
+    // Watch .wechat/custom/*.css (per-category custom styles) and reload on change
+    const customStyleWatcher = vscode.workspace.createFileSystemWatcher(
+      new vscode.RelativePattern(workspaceFolders[0], '.wechat/custom/*.css')
     );
-    overrideWatcher.onDidChange(() => this.refresh(), null, this.disposables);
-    overrideWatcher.onDidCreate(() => this.refresh(), null, this.disposables);
-    overrideWatcher.onDidDelete(() => this.refresh(), null, this.disposables);
-    this.disposables.push(overrideWatcher);
+    customStyleWatcher.onDidChange(() => this.refresh(), null, this.disposables);
+    customStyleWatcher.onDidCreate(() => this.refresh(), null, this.disposables);
+    customStyleWatcher.onDidDelete(() => this.refresh(), null, this.disposables);
+    this.disposables.push(customStyleWatcher);
   }
 
   private openOrCreateCustomTheme(): void {
@@ -254,14 +248,19 @@ export class PreviewPanel {
 
     // Get base vars for CSS variable replacement
     const cssPath = this.getCustomThemePath();
-    const overridePath = this.getThemeOverridePath();
-    this.presetManager?.setCssOverridePath(overridePath);
     const baseVars = this.presetManager?.getVarsWithOverride(cssPath) || {};
 
     // Apply style preset overrides with theme vars
     this.stylePresetManager.setThemeVars(baseVars as any);
     const styleOverrides = this.stylePresetManager.getAllStyleOverrides();
-    this.renderer.setStylePresetOverrides(styleOverrides);
+    const customCSS = loadAllCustomCSS(this.stylePresetManager.getCategories(), this.getWorkspaceRoot());
+    this.renderer.setStylePresetOverrides(styleOverrides, customCSS);
+  }
+
+  private getWorkspaceRoot(): string | null {
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (!workspaceFolders || workspaceFolders.length === 0) { return null; }
+    return workspaceFolders[0].uri.fsPath;
   }
 
   dispose(): void {

@@ -1,7 +1,8 @@
 import MarkdownIt from 'markdown-it';
-import { buildTheme, loadThemeVars, loadThemeOverride, applyThemeOverride, Theme } from './theme';
+import { buildTheme, loadThemeVars, Theme } from './theme';
 import { applyWeChatRules, RenderMode } from './rules';
 import { PresetManager } from './PresetManager';
+import { isCustomPresetId, StylePresetCategory } from './stylePresets';
 
 // Shiki transformer: adds data-line-number to each line span and wraps the
 // pre block with a card div + language label for the preview panel.
@@ -32,6 +33,7 @@ export class WeChatRenderer {
   private _stylePresetCSS: string = ''; // CSS from style presets
   private _stylePresetOverrides: Record<string, string> = {}; // Preset IDs for each category
   private _stylePresetManager: any = null; // Reference to StylePresetManager for getting CSS
+  private _customStyleCSS: Partial<Record<StylePresetCategory, string>> = {}; // User-authored CSS per category (from .wechat/custom/<category>.css)
 
   constructor() {
     this.mdPreview = new MarkdownIt({ html: true, linkify: true, typographer: true });
@@ -69,8 +71,11 @@ export class WeChatRenderer {
   }
 
   // Set style preset overrides (key=category, value=preset ID)
-  setStylePresetOverrides(overrides: Record<string, string>): void {
+  // customCSS carries user-authored CSS per category (from .wechat/custom/<category>.css),
+  // consumed when a category's selected preset is its "-custom" sentinel.
+  setStylePresetOverrides(overrides: Record<string, string>, customCSS?: Partial<Record<StylePresetCategory, string>>): void {
     this._stylePresetOverrides = overrides;
+    this._customStyleCSS = customCSS ?? {};
     this._applyStylePresetOverrides();
   }
 
@@ -87,8 +92,15 @@ export class WeChatRenderer {
     const overrides = this._stylePresetOverrides;
     const r = this.mdPreview.renderer.rules;
 
-    // Helper to get preset CSS
+    // Helper to get preset CSS. For a category's "-custom" sentinel preset,
+    // read user-authored CSS instead of looking it up in the built-in preset list.
+    // Custom CSS also goes through the same var(--wechat-accent) etc. substitution
+    // as built-in presets, so users can reference the active theme color.
     const getCSS = (category: string, presetId: string): string => {
+      if (isCustomPresetId(category as StylePresetCategory, presetId)) {
+        const raw = this._customStyleCSS[category as StylePresetCategory] ?? '';
+        return this._stylePresetManager?.replaceCSSVariables?.(raw) ?? raw;
+      }
       if (!this._stylePresetManager) return presetId;
       return this._stylePresetManager.getPresetCSS(category as any, presetId);
     };
@@ -284,6 +296,9 @@ export class WeChatRenderer {
         r['list_item_open'] = () => `<li style="position: relative; padding-left: 24px;"><span style="position: absolute; left: 0; color: ${accent}; font-weight: bold;">✓</span>`;
       } else if (isPreset(presetId, 'list-number-dot')) {
         r['bullet_list_open'] = () => `<ul style="list-style-type: decimal;">`;
+      } else if (isPreset(presetId, 'list-custom')) {
+        const css = getCSS('list', presetId);
+        r['bullet_list_open'] = () => `<ul style="${css}">`;
       }
     }
 
@@ -387,6 +402,13 @@ export class WeChatRenderer {
         r['td_open'] = (tokens: any, idx: number) => {
           return `<td style="border: none; padding: 12px 16px; text-align: left; background: ${idx % 2 === 0 ? '#f9f9f9' : 'transparent'};">`;
         };
+      } else if (isPreset(presetId, 'table-custom')) {
+        // Default table skeleton (border/padding), with user CSS appended to
+        // each element's style so it can override or extend the base look.
+        const css = getCSS('table', presetId);
+        r['table_open'] = () => `<table style="border-collapse: collapse; width: 100%; margin: 16px 0; ${css}">`;
+        r['th_open'] = () => `<th style="border: 1px solid #ddd; padding: 8px 12px; background: #f5f5f5; font-weight: 600; ${css}">`;
+        r['td_open'] = () => `<td style="border: 1px solid #ddd; padding: 8px 12px; ${css}">`;
       }
     }
 
@@ -447,9 +469,9 @@ export class WeChatRenderer {
       .replace(/"/g, '&quot;');
   }
 
-  // Call this before render() to pick up the latest .wechat/theme.css and .wechat/theme.override.ts.
+  // Call this before render() to pick up the latest .wechat/theme.css.
   // Re-applies WeChat rules then re-applies shiki plugin so fence highlight is preserved.
-  reloadTheme(cssPath: string | null, overridePath: string | null = null): void {
+  reloadTheme(cssPath: string | null): void {
     let theme: Theme;
     let customCSS: Record<string, string> | undefined;
 
@@ -465,9 +487,7 @@ export class WeChatRenderer {
       theme = buildTheme(themeVars);
     }
 
-    // Apply override if exists (legacy support, may be removed in future)
-    const overrideFn = overridePath ? loadThemeOverride(overridePath) : null;
-    this._currentTheme = overrideFn ? applyThemeOverride(theme, overrideFn) : theme;
+    this._currentTheme = theme;
 
     applyWeChatRules(this.mdPreview, this._currentTheme, 'preview');
     if (this._shikiPlugin) {
