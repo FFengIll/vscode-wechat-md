@@ -4,8 +4,8 @@ import * as vscode from 'vscode';
 import { WeChatRenderer } from '../renderer';
 import { buildWebviewHtml } from './webview';
 import { resolveImagesAsBase64 } from './imageUtils';
-import { PresetManager } from '../renderer/PresetManager';
-import { StylePresetManager } from '../renderer/StylePresetManager';
+import { PresetManager } from '../state/PresetManager';
+import { StylePresetManager } from '../state/StylePresetManager';
 import { loadAllCustomCSS } from '../renderer/customStyles';
 
 export class PreviewPanel {

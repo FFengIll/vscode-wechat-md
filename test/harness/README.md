@@ -11,8 +11,9 @@ command instead of by manual, one-off verification.
 `WeChatRenderer` (`src/renderer/index.ts`) and everything it calls into —
 `rules.ts`, `wechatTransformer.ts`, `theme.ts`, `stylePresets.ts`,
 `customStyles.ts`, `frontMatter.ts` — have no `vscode` import. Only
-`PresetManager` and `StylePresetManager` do, purely to persist selections
-into `vscode.Memento`; the renderer itself only ever calls two pure methods
+`PresetManager` and `StylePresetManager` (`src/state/**`) do, purely to
+persist selections into `vscode.Memento`; the renderer itself only ever
+calls two pure methods
 on them (`getPresetCSS`, `replaceCSSVariables`). `test/harness/render.ts`
 constructs a real `WeChatRenderer` and drives it through its actual public
 API (`reloadTheme()` from a temp `.wechat/theme.css`-equivalent file,

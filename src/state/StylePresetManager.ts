@@ -5,8 +5,8 @@
  */
 
 import * as vscode from 'vscode';
-import { getStylePresets, StylePresetCategory, StylePreset, allStylePresets, getCategorySelector as getCategorySelectorFor } from './stylePresets';
-import type { ThemeVars } from './theme';
+import { getStylePresets, StylePresetCategory, StylePreset, allStylePresets, getCategorySelector as getCategorySelectorFor } from '../renderer/stylePresets';
+import type { ThemeVars } from '../renderer/theme';
 
 // Keyed by StylePresetCategory so adding a category to stylePresets.ts's
 // allStylePresets automatically gets a slot here too — no separate list to
