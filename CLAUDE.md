@@ -44,6 +44,10 @@ Style resolution happens in two layers, applied in this order (second wins per-c
 
 Each category's preset list ends with a `"custom"` sentinel (`isCustomPresetId`/`getCustomPresetId`). Selecting it reads user-authored CSS from `.wechat/custom/<category>.css` (`customStyles.ts`) and **layers it on top of** that category's base theme style (`CATEGORY_THEME_KEY` in `index.ts`) rather than replacing it outright — full mechanism, file format, and known limitations are documented in `docs/custom-styles.md`.
 
+### Block-level container effects
+
+`::: card ... :::` / `::: tip ... :::` / etc. (`containers.ts`, via `markdown-it-container`) are a **closed catalog** (`CONTAINER_TYPES`) of block effects, registered once per `MarkdownIt` instance at construction — deliberately not a user-authored template mechanism. The tradeoff being made: users can't invent new HTML structure (that's what keeps every effect provably WeChat-paste-safe and harness-testable), but content *inside* a container still goes through the normal block parser, so `**bold**`/links/lists work — unlike a raw custom HTML tag (`<wmd-card>...</wmd-card>`), which CommonMark treats as an opaque HTML block and never reparses as markdown. Adding an effect means adding one `CONTAINER_TYPES` entry; `test/harness/containers.test.ts` covers it automatically. Container styling is currently fixed (not yet wired into the `.wechat/custom/` per-category override mechanism the way style presets are).
+
 ### Panels
 
 - `PreviewPanel` (`src/panel/PreviewPanel.ts`) — the live preview webview; owns the single `WeChatRenderer`, watches `.wechat/theme.css` and `.wechat/custom/*.css` for hot reload, handles rich-text copy (base64-inlines local images via `imageUtils.ts`) and the "open WeChat platform" toolbar action.

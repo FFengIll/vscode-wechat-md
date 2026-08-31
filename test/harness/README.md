@@ -58,6 +58,12 @@ pnpm run render <file.md> [out.html] [--mode=preview|copy] [--theme=path.css]
     substitution must work the same as it does for built-in presets.
   - `theme.test.ts` — `.wechat/theme.css`-driven `ThemeVars` overrides
     (accent color, max-width, ...) actually reach the rendered output.
+  - `containers.test.ts` — every entry in `CONTAINER_TYPES`
+    (`src/renderer/containers.ts`, the `::: card` / `::: tip` / ... block
+    syntax): WeChat compatibility in both modes, that nested markdown
+    (bold/link/list) inside the container still parses instead of being
+    swallowed as raw text, and that an unregistered container name falls
+    through to plain text rather than vanishing.
 - `../fixtures/*.md` — shared markdown fixtures.
 
 ## Adding coverage for a new renderer feature
@@ -65,7 +71,9 @@ pnpm run render <file.md> [out.html] [--mode=preview|copy] [--theme=path.css]
 1. If it's a new style preset, it's covered automatically — the sweep in
    `stylePresets.test.ts` iterates `allStylePresets`, no per-preset test to
    add.
-2. If it's a new element or rendering mode, add or extend a fixture in
+2. If it's a new container effect, same deal — add one entry to
+   `CONTAINER_TYPES` in `containers.ts` and `containers.test.ts` picks it up.
+3. If it's a new element or rendering mode, add or extend a fixture in
    `test/fixtures/`, then assert on it with `assertWeChatCompatible()` (or
    a narrower check if the element is legitimately preview-only, the way
    Shiki's highlighted `<pre>` is — see the comment in `basic.test.ts`).
