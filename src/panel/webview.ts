@@ -101,6 +101,7 @@ export function buildWebviewHtml(content: string, nonce: string): string {
   <div id="toolbar">
     <button id="copyRichBtn">✂️ 复制内容</button>
     <button id="stylePanelBtn" class="secondary">🎨 样式管理</button>
+    <button id="openMpBtn" class="secondary">📮 公众号后台</button>
     <button id="refreshBtn" class="secondary">🔄 刷新</button>
     <span id="tip"></span>
   </div>
@@ -120,6 +121,10 @@ export function buildWebviewHtml(content: string, nonce: string): string {
 
     document.getElementById('stylePanelBtn').addEventListener('click', function() {
       vscodeApi.postMessage({ command: 'openStylePanel' });
+    });
+
+    document.getElementById('openMpBtn').addEventListener('click', function() {
+      vscodeApi.postMessage({ command: 'openWechatPlatform' });
     });
 
     document.getElementById('refreshBtn').addEventListener('click', function() {

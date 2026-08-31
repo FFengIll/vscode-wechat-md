@@ -115,6 +115,9 @@ export class PreviewPanel {
         } else if (message.command === 'openStylePanel') {
           // Open the independent style management panel
           vscode.commands.executeCommand('wechat-md.openStylePanel');
+        } else if (message.command === 'openWechatPlatform') {
+          // Jump to the WeChat Official Account platform in the system browser
+          vscode.env.openExternal(vscode.Uri.parse('https://mp.weixin.qq.com'));
         }
       },
       null,
