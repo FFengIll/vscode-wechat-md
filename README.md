@@ -178,16 +178,20 @@
 
 1. 在样式管理面板对应类目的选项里点「自定义」
 2. 点选项下方的 **✎ 编辑自定义样式** 链接，会自动创建并打开 `.wechat/custom/<类目>.css`（如 `.wechat/custom/h1.css`）
-3. 文件是一条正常的 CSS 规则（选择器仅供参考、不影响渲染，只有花括号里的声明会被取出，套到该类目默认的 HTML 结构上）：
+3. 文件是一条正常的 CSS 规则（选择器仅供参考、不影响渲染，只有花括号里的声明会被取出，**叠加**在该类目默认的字号/颜色/间距等基础样式之上——不是整个替换掉，所以选中「自定义」后标题依然是标题的字号字重，不会退化成正文）：
 
    ```css
    /* .wechat/custom/h1.css */
    .wmd-h1, h1 {
+     display: table;       /* 收缩宽度到文字大小，配合 margin: auto 居中 */
+     margin: 1.8em auto 1em;
      text-align: center;
      border-bottom: 4px solid var(--wechat-accent);
      padding-bottom: 12px;
    }
    ```
+
+   （h1 默认是撑满容器的 block 元素，直接写 `border-bottom` 会是一条通栏长线；上面的 `display: table` 让下划线收缩成只有标题文字那么长。）
 
 4. 保存后预览自动热重载。声明里可以用 `var(--wechat-accent)` 等主题色变量，会自动替换成当前主题的实际颜色
 

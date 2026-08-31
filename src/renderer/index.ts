@@ -23,6 +23,22 @@ function lineNumberTransformer() {
   };
 }
 
+// Maps a style-preset category to the base Theme property it corresponds to.
+// Used so a category's "custom" CSS layers on top of the theme's default look
+// (font-size/color/spacing/etc.) instead of replacing it outright — otherwise
+// the element keeps its decoration but loses its base typography once pasted
+// into WeChat's editor, which renders purely from the inline style attribute
+// (no tag-semantics fallback the way a live browser preview has for <h1> etc.).
+const CATEGORY_THEME_KEY: Partial<Record<string, keyof Theme>> = {
+  h1: 'h1', h2: 'h2', h3: 'h3',
+  blockquote: 'blockquote',
+  list: 'ul',
+  link: 'a',
+  image: 'img',
+  divider: 'hr',
+  inlineCode: 'inlineCode',
+};
+
 export class WeChatRenderer {
   private mdPreview: MarkdownIt;
   private mdCopy: MarkdownIt;
@@ -95,11 +111,17 @@ export class WeChatRenderer {
     // Helper to get preset CSS. For a category's "-custom" sentinel preset,
     // read user-authored CSS instead of looking it up in the built-in preset list.
     // Custom CSS also goes through the same var(--wechat-accent) etc. substitution
-    // as built-in presets, so users can reference the active theme color.
+    // as built-in presets, so users can reference the active theme color — and
+    // is layered on top of the category's base theme style (see CATEGORY_THEME_KEY)
+    // rather than replacing it, so the element doesn't lose its base typography
+    // (font-size/weight/color/spacing) once pasted into WeChat's editor.
     const getCSS = (category: string, presetId: string): string => {
       if (isCustomPresetId(category as StylePresetCategory, presetId)) {
         const raw = this._customStyleCSS[category as StylePresetCategory] ?? '';
-        return this._stylePresetManager?.replaceCSSVariables?.(raw) ?? raw;
+        const substituted = this._stylePresetManager?.replaceCSSVariables?.(raw) ?? raw;
+        const themeKey = CATEGORY_THEME_KEY[category];
+        const base = themeKey ? (this._currentTheme as any)[themeKey] : '';
+        return base ? `${base}; ${substituted}` : substituted;
       }
       if (!this._stylePresetManager) return presetId;
       return this._stylePresetManager.getPresetCSS(category as any, presetId);

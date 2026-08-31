@@ -86,16 +86,20 @@ Beyond the built-in decoration presets, every element category (headings, blockq
 
 1. Pick "Custom" for a category in the panel.
 2. Click the **✎ Edit Custom Style** link under that category's options — it creates and opens `.wechat/custom/<category>.css` (e.g. `.wechat/custom/h1.css`).
-3. The file is a normal, valid CSS rule (selector + `{ }`). The selector is for readability only — only the declarations inside the braces are read and inlined onto that category's default HTML structure:
+3. The file is a normal, valid CSS rule (selector + `{ }`). The selector is for readability only — only the declarations inside the braces are read, and they're **layered on top of** that category's base font-size/color/spacing (not a full replacement), so a custom H1 still looks like a heading instead of falling back to body text:
 
    ```css
    /* .wechat/custom/h1.css */
    .wmd-h1, h1 {
+     display: table;       /* shrink-wrap to the text width, centered via margin: auto */
+     margin: 1.8em auto 1em;
      text-align: center;
      border-bottom: 4px solid var(--wechat-accent);
      padding-bottom: 12px;
    }
    ```
+
+   (`h1` is a full-width block element by default, so a plain `border-bottom` would span the whole page; `display: table` shrinks it to just the heading text's width.)
 
 4. Save and the preview hot-reloads. `var(--wechat-accent)` and friends are substituted with the active theme's actual color.
 
