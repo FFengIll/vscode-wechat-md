@@ -40,6 +40,8 @@ export class PresetManager {
     this.registry.set('modern', presets.modernPreset);
     this.registry.set('minimal', presets.minimalPreset);
     this.registry.set('tech', presets.techPreset);
+    this.registry.set('claude', presets.claudePreset);
+    this.registry.set('pikachu', presets.pikachuPreset);
   }
 
   /**

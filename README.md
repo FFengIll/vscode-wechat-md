@@ -136,14 +136,14 @@
 
 通过命令面板打开 `WeChat MD: Open Style Management Panel`，在面板中可以：
 
-- **主题预设**：切换内置颜色主题（WeChat Green / Elegant Classic / Modern Bold / Minimal Clean / Tech Developer）
+- **主题预设**：切换内置颜色主题（WeChat Green / Elegant Classic / Modern Bold / Minimal Clean / Tech Developer / Claude / Pikachu）
 - **逐元素样式**：为标题（H1/H2/H3）、引用块、列表、链接、图片、分割线、表格、行内代码等元素分别选择装饰风格
 - **悬停实时预览**：鼠标悬停任意主题或样式选项，即可在浮层中看到真实渲染效果，无需逐个点击应用——预览经由真实渲染管线生成，所见即所得
 - 所有调整实时生效，无需重启
 
 ### 主题预设
 
-内置 5 种颜色主题：
+内置 7 种颜色主题：
 
 | 预设名称 | 风格描述 | 特点 |
 |---------|---------|------|
@@ -152,6 +152,8 @@
 | **Modern Bold** | 现代大胆 | 高对比度，蓝色主调，视觉冲击力强 |
 | **Minimal Clean** | 极简干净 | 灰度配色，内容优先，减少视觉干扰 |
 | **Tech Developer** | 技术风格 | 深色背景，紫色强调，优化代码可读性 |
+| **Claude** | 陶土暖色 | Anthropic Claude 风格的陶土橙 + 暖调米白 |
+| **Pikachu** | 活泼可爱 | 明黄 + 脸颊红，皮卡丘配色 |
 
 ### 逐元素样式预设
 
