@@ -10,6 +10,7 @@ node_modules/**
 out/**
 src/**
 example/**
+docs/**
 tsconfig.json
 esbuild.js
 eslint.config.mjs

@@ -82,7 +82,7 @@ Save the file and the preview updates instantly — no restart required.
 
 ## Per-Category Custom Style
 
-Beyond the built-in decoration presets, every element category (headings, blockquote, list, link, image, divider, table, inline code) has a **"Custom"** option in the Style Management Panel. Selecting it switches that category over to CSS you write yourself:
+Beyond the built-in decoration presets, every element category (headings, blockquote, list, link, image, divider, table, inline code) has a **"Custom"** option in the Style Management Panel. Selecting it switches that category over to CSS you write yourself. This is the quick-start version; for the full mechanism (layering rules, which theme variables are substituted, known limitations, and the source files involved) see [docs/custom-styles.md](docs/custom-styles.md) (Chinese):
 
 1. Pick "Custom" for a category in the panel.
 2. Click the **✎ Edit Custom Style** link under that category's options — it creates and opens `.wechat/custom/<category>.css` (e.g. `.wechat/custom/h1.css`).
