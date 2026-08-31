@@ -128,7 +128,7 @@ export function loadThemeVars(cssPath: string | null): ThemeVars {
 export function buildTheme(v: ThemeVars, customCSS?: Record<string, string>) {
   const baseTheme = {
     container: [
-      'font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", sans-serif',
+      `font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', 'Hiragino Sans GB', sans-serif`,
       `max-width: ${v.maxWidth}`,
       'margin: 0 auto',
       'padding: 0 16px',
@@ -163,14 +163,19 @@ export function buildTheme(v: ThemeVars, customCSS?: Record<string, string>) {
     strong: ['font-weight: bold', 'color: #1a1a1a'].join('; '),
     em:     ['font-style: italic', 'color: #555'].join('; '),
 
+    // background must be explicit, even for the "no background" look: WeChat's
+    // own editor applies its own default gray background to bare <code> tags,
+    // so omitting the property here doesn't achieve transparency — it just
+    // lets WeChat's default show through regardless of what's selected (the
+    // same reason preCode below explicitly sets `background: none`).
     inlineCode: [
-      'font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace',
-      'font-size: 14px', `color: ${v.inlineCodeColor}`,
+      `font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace`,
+      'font-size: 14px', `color: ${v.inlineCodeColor}`, 'background: none',
     ].join('; '),
 
     pre: [`background-color: ${v.codeBg}`, 'padding: 16px', 'border-radius: 6px', 'overflow-x: auto', 'margin: 1em 0'].join('; '),
     preCode: [
-      'font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace',
+      `font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace`,
       'font-size: 14px', 'line-height: 1.6', 'color: #24292e', 'background: none', 'padding: 0',
     ].join('; '),
 

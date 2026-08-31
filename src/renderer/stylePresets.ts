@@ -752,7 +752,7 @@ export const inlineCodeStyles: StylePreset[] = [
     id: 'inline-code-gray',
     name: '灰色背景',
     description: '浅灰背景',
-    css: 'font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; background-color: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-size: 14px; color: var(--wechat-inline-code-color);'
+    css: `font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace; background-color: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-size: 14px; color: var(--wechat-inline-code-color);`
   },
   {
     id: 'inline-code-accent',
@@ -764,7 +764,9 @@ export const inlineCodeStyles: StylePreset[] = [
     id: 'inline-code-border',
     name: '边框',
     description: '带边框样式',
-    css: 'border: 1px solid var(--wechat-accent); padding: 2px 6px; border-radius: 3px; font-size: 14px; color: var(--wechat-inline-code-color);'
+    // background must be explicit — WeChat's editor applies its own default
+    // gray background to <code> tags that don't declare one (see theme.ts).
+    css: 'background: none; border: 1px solid var(--wechat-accent); padding: 2px 6px; border-radius: 3px; font-size: 14px; color: var(--wechat-inline-code-color);'
   },
   {
     id: 'inline-code-card',
@@ -788,7 +790,9 @@ export const inlineCodeStyles: StylePreset[] = [
     id: 'inline-code-minimal',
     name: '简约',
     description: '无背景',
-    css: 'color: var(--wechat-accent); font-size: 14px; font-family: "SFMono-Regular", Consolas, monospace;'
+    // background must be explicit — WeChat's editor applies its own default
+    // gray background to <code> tags that don't declare one (see theme.ts).
+    css: `background: none; color: var(--wechat-accent); font-size: 14px; font-family: 'SFMono-Regular', Consolas, monospace;`
   },
   {
     id: 'inline-code-tag',

@@ -1,0 +1,25 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`WeChatRenderer — comprehensive fixture > renders copy-mode HTML that is WeChat-compatible 1`] = `
+"<section style="font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', 'Hiragino Sans GB', sans-serif; max-width: 680px; margin: 0 auto; padding: 0 16px; color: #333; font-size: 16px; line-height: 1.8">
+<p style="font-size: 16px; line-height: 1.8; color: #333; margin: 0.8em 0">深入理解渲染管线</p>
+<h1 style="font-size: 24px; font-weight: bold; color: #1a1a1a; margin: 1.6em 0 0.8em; line-height: 1.4; background: transparent; padding: 0; border-radius: 0">一级标题</h1>
+<p style="font-size: 16px; line-height: 1.8; color: #333; margin: 0.8em 0">正文段落，包含<strong style="font-weight: bold; color: #1a1a1a">粗体</strong>、<em style="font-style: italic; color: #555">斜体</em>和 <code style="font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace; font-size: 14px; color: #d63384; background: none">行内代码</code>，以及一个<a href="https://example.com" style="color: #07C160; text-decoration: none">链接</a>。</p>
+<h2 style="font-size: 20px; font-weight: bold; color: #1a1a1a; margin: 1.4em 0 0.7em; line-height: 1.4; background: transparent; padding: 0; border-radius: 0">二级标题</h2>
+<blockquote style="border-left: 4px solid #07C160; padding: 10px 16px; background-color: #f9f9f9; color: #666; margin: 1em 0; font-style: italic"><p style="font-size: 16px; line-height: 1.8; color: #333; margin: 0.8em 0">这是一段引用文字，用于验证 blockquote 的渲染。</p>
+</blockquote>
+<h3 style="font-size: 18px; font-weight: bold; color: #1a1a1a; margin: 1.2em 0 0.6em; line-height: 1.4; background: transparent; padding: 0; border-radius: 0">三级标题</h3>
+<ul style="padding-left: 24px; margin: 0.8em 0; list-style-type: disc"><li style="font-size: 16px; line-height: 1.8; margin: 0.3em 0; color: #333">无序列表项一</li>
+<li style="font-size: 16px; line-height: 1.8; margin: 0.3em 0; color: #333">无序列表项二<ul style="padding-left: 24px; margin: 0.8em 0; list-style-type: disc"><li style="font-size: 16px; line-height: 1.8; margin: 0.3em 0; color: #333">嵌套列表项</li>
+</ul>
+</li>
+</ul>
+<ol style="padding-left: 24px; margin: 0.8em 0; list-style-type: decimal"><li style="font-size: 16px; line-height: 1.8; margin: 0.3em 0; color: #333">有序列表项一</li>
+<li style="font-size: 16px; line-height: 1.8; margin: 0.3em 0; color: #333">有序列表项二</li>
+</ol>
+<hr style="border: none; border-top: 1px solid #eee; margin: 2em 0">
+<table style="width: 100%; border-collapse: collapse; margin: 1em 0; font-size: 15px"><thead><tr><th style="background-color: #f0f0f0; padding: 10px 12px; border: 1px solid #ddd; text-align: left; font-weight: bold; color: #333">列一</th><th style="background-color: #f0f0f0; padding: 10px 12px; border: 1px solid #ddd; text-align: left; font-weight: bold; color: #333">列二</th></tr></thead><tbody><tr><td style="padding: 8px 12px; border: 1px solid #ddd; color: #333">内容 A</td><td style="padding: 8px 12px; border: 1px solid #ddd; color: #333">内容 B</td></tr><tr><td style="padding: 8px 12px; border: 1px solid #ddd; color: #333">内容 C</td><td style="padding: 8px 12px; border: 1px solid #ddd; color: #333">内容 D</td></tr></tbody></table>
+<section class="code-snippet__js"><pre class="code-snippet__js code-snippet code-snippet_nowrap" style="background-color: #f6f8fa; padding: 16px; border-radius: 6px; overflow-x: auto; margin: 1em 0" data-lang="typescript"><code><span leaf="">function hello(name: string): string {</span></code><code><span leaf="">  return \`Hello, \${name}!\`;</span></code><code><span leaf="">}</span></code></pre></section>
+<p style="font-size: 16px; line-height: 1.8; color: #333; margin: 0.8em 0"><img src="https://example.com/image.png" alt="示例图片" style="max-width: 100%; display: block; margin: 1em auto; border-radius: 4px"></p>
+</section>"
+`;
