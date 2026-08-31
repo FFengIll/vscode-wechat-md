@@ -1,4 +1,4 @@
-// A vscode-free stand-in for StylePresetManager (src/renderer/StylePresetManager.ts).
+// A vscode-free stand-in for StylePresetManager (src/state/StylePresetManager.ts).
 //
 // WeChatRenderer.setStylePresetManager() accepts the manager as `any` and only
 // ever calls .getPresetCSS(category, presetId) and .replaceCSSVariables(css) on

@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
 import { PreviewPanel } from './panel/PreviewPanel';
 import { StylePanel } from './panel/StylePanel';
-import { PresetManager } from './renderer/PresetManager';
-import { StylePresetManager } from './renderer/StylePresetManager';
+import { PresetManager } from './state/PresetManager';
+import { StylePresetManager } from './state/StylePresetManager';
 
 // Global preset manager instances
 let presetManager: PresetManager | null = null;

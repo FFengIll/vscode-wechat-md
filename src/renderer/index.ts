@@ -5,7 +5,7 @@ import MarkdownIt from 'markdown-it';
 const frontMatterPlugin = require('markdown-it-front-matter');
 import { buildTheme, loadThemeVars, Theme } from './theme';
 import { applyWeChatRules, RenderMode } from './rules';
-import { PresetManager } from './PresetManager';
+import { PresetManager } from '../state/PresetManager';
 import { isCustomPresetId, StylePresetCategory } from './stylePresets';
 import { transformToWeChatFormat, normalizeLang as wxNormalizeLang } from './wechatTransformer';
 import { parseFrontMatter, FrontMatter } from './frontMatter';

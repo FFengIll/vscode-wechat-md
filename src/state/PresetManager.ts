@@ -2,9 +2,9 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
-import type { ThemePreset, ThemeVars } from './types';
-import { loadThemeVars } from './theme';
-import * as presets from './presets';
+import type { ThemePreset, ThemeVars } from '../renderer/types';
+import { loadThemeVars } from '../renderer/theme';
+import * as presets from '../renderer/presets';
 
 /**
  * Manages theme presets including loading, switching, and merging with CSS overrides
@@ -136,7 +136,7 @@ export class PresetManager {
    * Priority: Preset vars > CSS overrides (theme.ts should only override defaults, not presets)
    */
   getVarsWithOverride(cssPath: string | null = this._cssOverridePath): ThemeVars {
-    const defaultVars = require('./theme').defaultVars || {};
+    const defaultVars = require('../renderer/theme').defaultVars || {};
     let cssVars: ThemeVars = { ...defaultVars };
 
     // Apply CSS overrides if they exist

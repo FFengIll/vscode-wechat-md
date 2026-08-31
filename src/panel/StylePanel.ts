@@ -1,7 +1,7 @@
 // Style Panel - Independent panel for style management
 import * as vscode from 'vscode';
-import { PresetManager } from '../renderer/PresetManager';
-import { StylePresetManager } from '../renderer/StylePresetManager';
+import { PresetManager } from '../state/PresetManager';
+import { StylePresetManager } from '../state/StylePresetManager';
 import { getStylePresets, StylePresetCategory, isCustomPresetId } from '../renderer/stylePresets';
 import type { ThemeVars } from '../renderer/theme';
 import { WeChatRenderer } from '../renderer';

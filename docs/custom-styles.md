@@ -150,7 +150,7 @@ header: 欢迎阅读本期内容
 | `src/renderer/frontMatter.ts` | `parseFrontMatter()`——极简的 frontmatter 逐行 `key: value` 解析器 |
 | `src/renderer/stylePresets.ts` | 每个类目预设数组末尾的 `-custom` 哨兵项定义；`getCustomPresetId`/`isCustomPresetId`；类目→选择器映射 `getCategorySelector` |
 | `src/renderer/customStyles.ts` | 纯文件系统读写：`loadCustomCSS`/`loadAllCustomCSS`/`ensureCustomStyleFile`/`getCustomStylePath`；CSS 规则花括号提取逻辑 `extractDeclarations` |
-| `src/renderer/StylePresetManager.ts` | `replaceCSSVariables()`（供内置预设和自定义 CSS 共用）；面板选中状态的读写（存在 `workspaceState['selectedStylePresets']`，不是文件） |
+| `src/state/StylePresetManager.ts` | `replaceCSSVariables()`（供内置预设和自定义 CSS 共用）；面板选中状态的读写（存在 `workspaceState['selectedStylePresets']`，不是文件） |
 | `src/renderer/index.ts` | `_applyStylePresetOverrides()` 里的 `getCSS()` 辅助函数——命中 `-custom` 时读自定义 CSS、做变量替换、叠加 `CATEGORY_THEME_KEY` 对应的主题基础样式；`list-custom`/`table-custom` 分支；`render()` 里 frontmatter 解析结果的读取和 `header` 块注入 |
 | `src/panel/PreviewPanel.ts` | `applyCustomStylesToRenderer()` 汇总所有类目的自定义 CSS 传给渲染器；`.wechat/custom/*.css` 的文件监听 |
 | `src/panel/StylePanel.ts` | 「✎ 编辑自定义样式」链接的消息处理 `openCustomStyleFile`；hover 预览时读取自定义文件内容 |

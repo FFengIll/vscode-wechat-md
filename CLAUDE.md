@@ -39,7 +39,7 @@ Prefer `pnpm run test:harness` over manually opening the preview panel and eyeba
 
 Style resolution happens in two layers, applied in this order (second wins per-category):
 
-1. **Baseline** — `reloadTheme()` builds a `Theme` from `.wechat/theme.css` CSS variables (`theme.ts`: `loadThemeVars`/`buildTheme`) plus the active whole-theme JSON preset from `PresetManager` (`.wechat/presets/*.json`, color vars only).
+1. **Baseline** — `reloadTheme()` builds a `Theme` from `.wechat/theme.css` CSS variables (`theme.ts`: `loadThemeVars`/`buildTheme`) plus the active whole-theme JSON preset from `PresetManager` (`src/state/PresetManager.ts`; `.wechat/presets/*.json`, color vars only).
 2. **Per-category override** — `_applyStylePresetOverrides()` (must run *after* `reloadTheme()`) selectively rewrites specific markdown-it rules (`heading_open`, `blockquote_open`, `hr`, `table_open`, etc.) for whichever categories have a non-default preset selected in `StylePresetManager` (`stylePresets.ts` defines the built-in preset catalog per category: h1/h2/h3, blockquote, list, link, image, divider, table, inlineCode).
 
 Each category's preset list ends with a `"custom"` sentinel (`isCustomPresetId`/`getCustomPresetId`). Selecting it reads user-authored CSS from `.wechat/custom/<category>.css` (`customStyles.ts`) and **layers it on top of** that category's base theme style (`CATEGORY_THEME_KEY` in `index.ts`) rather than replacing it outright — full mechanism, file format, and known limitations are documented in `docs/custom-styles.md`.
@@ -55,9 +55,15 @@ Each category's preset list ends with a `"custom"` sentinel (`isCustomPresetId`/
 
 Both webviews communicate with the extension host purely via `postMessage` — there's no shared state object between webview JS and the host beyond that.
 
+### Directory ownership: `src/renderer/` vs `src/state/`
+
+`src/renderer/` holds only the pure, `vscode`-free rendering pipeline described above (`index.ts`, `rules.ts`, `theme.ts`, `wechatTransformer.ts`, `containers.ts`, `customStyles.ts`, `frontMatter.ts`, `types.ts`, `stylePresets.ts`, `presets/*.ts`) — this is exactly the set `test/harness/` drives directly through Node with no VS Code host, so nothing in this directory may import `vscode`.
+
+`src/state/` holds the two `vscode`-coupled persistence managers below. They read/write `vscode.Memento` or the workspace filesystem via the `vscode` API, so they live outside `src/renderer/` on purpose; `WeChatRenderer` only ever reaches them through two pure methods (`getPresetCSS`, `replaceCSSVariables`), which is what lets the harness fake them out (`test/harness/fakeStylePresetManager.ts`) instead of needing a real VS Code host.
+
 ### Two preset systems (don't confuse them)
 
-- `PresetManager` — whole-theme color presets (`.wechat/presets/*.json`: accent/font/spacing vars + optional `customCSS` map). Persisted as files.
-- `StylePresetManager` — per-category decoration presets + the `"custom"` sentinel described above. Selection state persisted in `context.workspaceState['selectedStylePresets']`, **not** a file.
+- `PresetManager` (`src/state/PresetManager.ts`) — whole-theme color presets (`.wechat/presets/*.json`: accent/font/spacing vars + optional `customCSS` map). Persisted as files.
+- `StylePresetManager` (`src/state/StylePresetManager.ts`) — per-category decoration presets + the `"custom"` sentinel described above. Selection state persisted in `context.workspaceState['selectedStylePresets']`, **not** a file.
 
 There is no VS Code `configuration` contribution — no `wechat-md.*` settings.json keys exist; everything is either a workspace file under `.wechat/` or `workspaceState`.

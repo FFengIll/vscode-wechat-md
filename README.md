@@ -72,6 +72,20 @@
 
 这是一份固定目录——不支持自定义 id 或自己写 HTML 结构，是为了保证每种效果都经过校验、粘贴到微信不会出问题；未识别的 `:::` 名称会原样保留为普通文本。
 
+### Frontmatter `header` 字段
+
+文档开头可以写一段 frontmatter，`header:` 字段会渲染成正文最前面的一段文字（默认跟普通段落样式一样，可用 `.wechat/custom/header.css` 定制外观），`---` 之间的内容本身不会出现在渲染结果里：
+
+```markdown
+---
+header: 欢迎阅读本期内容
+---
+
+# 正文标题
+```
+
+目前只支持扁平的 `key: value` 字段，不支持嵌套/数组/多行值；完整说明见 [docs/custom-styles.md](docs/custom-styles.md) 第 8 节。
+
 ---
 
 ## 安装与使用
@@ -101,7 +115,35 @@
 
 ## 自定义主题
 
-### 方式一：JSON 预设文件（推荐）
+自定义主题分三个层次，**范围从全局到局部依次收窄，后一层只覆盖它涉及的部分，其余仍继承前一层**：
+
+1. **`.wechat/theme.css`** —— 全局基础变量（强调色、字号、行高等），影响所有内置装饰
+2. **`.wechat/presets/*.json`** —— 整套主题预设，一次性覆盖上面这些变量，还可以附带 `customCSS`
+3. **样式管理面板逐类目选择** —— 在上面两层之上，为标题/引用块/列表等单个元素类目单独换一套装饰风格，见下方「样式管理」章节
+
+### 方式零：全局 CSS 变量（`.wechat/theme.css`）
+
+在工作区根目录创建 `.wechat/theme.css`（也可以从样式管理面板里打开），用标准 CSS 自定义属性覆盖强调色、字号、行高等基础变量：
+
+```css
+:root {
+  --wechat-accent: #07C160;            /* 强调色（默认微信绿） */
+  --wechat-font-size: 16px;            /* 正文字号 */
+  --wechat-line-height: 1.8;           /* 行高 */
+  --wechat-text-color: #333;           /* 正文颜色 */
+  --wechat-code-bg: #f6f8fa;           /* 代码块背景 */
+  --wechat-inline-code-color: #d63384; /* 行内代码颜色 */
+  --wechat-blockquote-bg: #f9f9f9;     /* 引用块背景 */
+  --wechat-max-width: 680px;           /* 内容最大宽度 */
+
+  /* h1~h3 还各自支持 font-size / font-weight / color / bg / padding / border-radius，
+     例如 --wechat-h1-color、--wechat-h1-bg；h4~h6 支持 font-size / font-weight / color */
+}
+```
+
+保存后预览立即刷新，无需重启。这一层只是打底——如果同时选中了下面的 JSON 预设，预设里 `vars` 字段定义的同名变量会覆盖这里的值。
+
+### 方式一：JSON 预设文件
 
 在 `.wechat/presets/` 目录下创建 JSON 文件（如 `my-custom.json`）：
 
@@ -161,7 +203,7 @@
 通过命令面板打开 `WeChat MD: Open Style Management Panel`，在面板中可以：
 
 - **主题预设**：切换内置颜色主题（WeChat Green / Elegant Classic / Modern Bold / Minimal Clean / Tech Developer / Claude / Pikachu / Corporate Blue）
-- **逐元素样式**：为标题（H1/H2/H3）、引用块、列表、链接、图片、分割线、表格、行内代码等元素分别选择装饰风格
+- **逐元素样式**：为标题（H1/H2/H3）、引用块、列表、链接、图片、分割线、表格、行内代码、代码块等元素分别选择装饰风格
 - **悬停实时预览**：鼠标悬停任意主题或样式选项，即可在浮层中看到真实渲染效果，无需逐个点击应用——预览经由真实渲染管线生成，所见即所得
 - 所有调整实时生效，无需重启
 
@@ -196,12 +238,15 @@
 | 分割线 | 虚线、点线、渐变、波浪、双线、文字装饰等 |
 | 表格 | 斑马纹、主题色表头、无边框、卡片式、现代等 |
 | 行内代码 | 主题色、边框、卡片、高亮、深色、标签、虚线、渐变等 |
+| 代码块 | 卡片标签、Mac 窗口、主题边框、简约左竖线等 |
 
 每个类目的选项列表最后都有一项 **「自定义」**，选中后改用你自己写的 CSS，见下节。
 
+> 还有一个 `header`（frontmatter `header:` 字段的样式）类目——目前面板里没有它的选项列表，只能通过手写 `.wechat/custom/header.css` 定制，默认跟随正文段落样式。
+
 ### 逐类目自定义样式
 
-上面 10 个元素类目（H1/H2/H3、引用块、列表、链接、图片、分割线、表格、行内代码）除了内置风格，都可以选「自定义」，改用你自己写的样式。这里只讲基本用法，完整机制说明（叠加规则、变量替换范围、已知限制、涉及的源码）见 [docs/custom-styles.md](docs/custom-styles.md)：
+上面 11 个元素类目（H1/H2/H3、引用块、列表、链接、图片、分割线、表格、行内代码、代码块）除了内置风格，都可以选「自定义」，改用你自己写的样式；`header` 没有面板选项，但同样支持这套自定义机制。这里只讲基本用法，完整机制说明（叠加规则、变量替换范围、已知限制、涉及的源码）见 [docs/custom-styles.md](docs/custom-styles.md)：
 
 1. 在样式管理面板对应类目的选项里点「自定义」
 2. 点选项下方的 **✎ 编辑自定义样式** 链接，会自动创建并打开 `.wechat/custom/<类目>.css`（如 `.wechat/custom/h1.css`）
@@ -222,23 +267,13 @@
 
 4. 保存后预览自动热重载。声明里可以用 `var(--wechat-accent)` 等主题色变量，会自动替换成当前主题的实际颜色
 
-类目与文件名对应关系：`h1` `h2` `h3` `blockquote` `list` `link` `image` `divider` `table` `inlineCode`，即文件路径固定是 `.wechat/custom/<类目 key>.css`。
+类目与文件名对应关系：`h1` `h2` `h3` `blockquote` `list` `link` `image` `divider` `table` `inlineCode` `codeBlock` `header`，即文件路径固定是 `.wechat/custom/<类目 key>.css`。
 
 > 这套「逐类目自定义样式」是目前推荐的深度定制方式，比早期版本里全局的 `.wechat/theme.override.ts`（已移除）更细粒度、门槛也更低——不需要写 TypeScript 或了解内部 `Theme` 结构，纯 CSS 声明即可。
 
 ### 创建自定义主题预设
 
-创建自定义预设有两种方式：
-
-#### 方式一：通过样式管理面板
-
-1. 命令面板执行 `WeChat MD: Open Style Management Panel`
-2. 在主题预设 Tab 中调整至满意效果
-3. 预设文件可手动保存到 `.wechat/presets/` 目录
-
-#### 方式二：手动创建预设文件
-
-在 `.wechat/presets/` 目录下创建 JSON 文件（如 `my-custom.json`）：
+在 `.wechat/presets/` 目录下创建 JSON 文件（如 `my-custom.json`）——目前只能手写 JSON 文件，面板里没有「另存为新预设」按钮：
 
 ```json
 {
@@ -262,6 +297,8 @@
   }
 }
 ```
+
+> 新建/编辑 `.wechat/presets/*.json` 后需要重新加载窗口（命令面板执行 `Developer: Reload Window`）才会生效——预设文件目前只在插件启动时读取一次，不像 `.wechat/theme.css` 和 `.wechat/custom/*.css` 那样有热重载。
 
 ### 预设文件格式参考
 
@@ -321,11 +358,13 @@
 
 ### 优先级规则
 
-当同时存在多个配置时，优先级从高到低：
+当同时存在多个配置时，作用范围从全局到局部依次收窄，后一层覆盖前一层：
 
-1. **customCSS** — 高级 CSS 扩展（追加到元素样式）
-2. **vars** — 预设样式变量
-3. **系统默认值** — 内置默认样式
+1. **系统默认值** — 内置默认样式变量
+2. **`.wechat/theme.css`** — 覆盖第 1 层里同名的变量
+3. **预设 `vars`** — 选中某个 JSON 主题预设时，覆盖第 2 层里同名的变量
+4. **预设 `customCSS`** — 追加到对应元素的内联样式末尾（同一 CSS 属性后出现的生效）
+5. **样式管理面板的逐类目预设 / 自定义 CSS** — 独立的一根轴，为单个元素类目（H1、引用块、列表……）整体切换到另一套装饰结构，或叠加你自己写的 CSS；详见下方「样式管理」与「逐类目自定义样式」章节
 
 示例：基于预设修改 H1 标题背景并添加渐变
 
